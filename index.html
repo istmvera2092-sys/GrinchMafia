@@ -1,0 +1,2539 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+  <title>Grinch Mafia — Host Tracker (Step-by-step)</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a33;
+      --panel2:#0f162d;
+      --line:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.68);
+      --accent:#8aa6ff;
+      --good:#7bd389;
+      --bad:#ff6b6b;
+      --warn:#ffd166;
+
+      --radius:16px;
+      --shadow: 0 10px 28px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(900px 600px at 20% 10%, rgba(138,166,255,.18), transparent 60%),
+        radial-gradient(900px 600px at 80% 10%, rgba(123,211,137,.12), transparent 60%),
+        radial-gradient(900px 600px at 50% 90%, rgba(255,107,107,.10), transparent 60%),
+        var(--bg);
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(11,16,32,.92), rgba(11,16,32,.65));
+      backdrop-filter: blur(10px);
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:14px}
+    .top{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .title h1{margin:0;font-size:18px}
+    .pills{display:flex;gap:8px;flex-wrap:wrap}
+    .pill{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .btns{display:flex;gap:8px;flex-wrap:wrap}
+    button{
+      cursor:pointer;
+      border:none;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:800;
+      font-size:12px;
+      color:var(--text);
+      background: linear-gradient(180deg, rgba(34,48,106,.95), rgba(26,37,80,.95));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: 0 10px 18px rgba(0,0,0,.22);
+    }
+    button.secondary{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:none;
+      font-weight:700;
+    }
+    button.good{
+      background: linear-gradient(180deg, rgba(123,211,137,.34), rgba(123,211,137,.16));
+      border:1px solid rgba(123,211,137,.35);
+    }
+    button.danger{
+      background: linear-gradient(180deg, rgba(255,107,107,.35), rgba(255,107,107,.16));
+      border:1px solid rgba(255,107,107,.35);
+    }
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .grid{display:grid;grid-template-columns: 360px 1fr; gap:14px; align-items:start; padding-top:14px}
+    @media (max-width:980px){ .grid{grid-template-columns:1fr} }
+
+    .card{
+      background: linear-gradient(180deg, rgba(18,26,51,.92), rgba(15,22,45,.92));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .hd{
+      padding:12px;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .hd .h{font-weight:900;font-size:13px;color:rgba(255,255,255,.88)}
+    .bd{padding:12px}
+    .kpi{display:grid;grid-template-columns:1fr 1fr 1fr; gap:10px}
+    .k{
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:10px;
+    }
+    .k .t{font-size:12px;color:var(--muted)}
+    .k .v{font-family:var(--mono);font-size:22px;font-weight:900;margin-top:4px}
+    .k .sub{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.25}
+    .tag{
+      font-size:11px; padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:rgba(255,255,255,.86);
+      display:inline-flex; gap:6px; align-items:center;
+      white-space:nowrap;
+    }
+    .tag.good{border-color:rgba(123,211,137,.35)}
+    .tag.bad{border-color:rgba(255,107,107,.35)}
+    .tag.warn{border-color:rgba(255,209,102,.35)}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .two{display:grid;grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width:780px){ .two{grid-template-columns:1fr} }
+    label{display:block;font-size:12px;color:var(--muted); margin:0 0 6px}
+    input, select, textarea{
+      width:100%;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color:var(--text);
+      outline:none;
+    }
+    textarea{min-height:84px; resize:vertical}
+    .mono{font-family:var(--mono)}
+    .hint{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,.16);
+      background: rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .hint b{color:rgba(255,255,255,.92)}
+    .divider{height:1px;background:var(--line);margin:12px 0}
+
+    /* Stepper */
+    .stepHead{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      background: rgba(0,0,0,.16);
+    }
+    .stepHead .name{font-weight:950}
+    .stepHead .sub{font-size:12px;color:var(--muted)}
+    .step{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      background: rgba(0,0,0,.14);
+      overflow:hidden;
+    }
+    .step.active{border-color:rgba(138,166,255,.35)}
+    .step .body{padding:12px; display:none}
+    .step.active .body{display:block}
+    .stepNav{
+      display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+      padding:10px 12px; border-top:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+    }
+    .warnText{color:var(--warn);font-size:12px;display:none;margin-top:8px;line-height:1.35}
+    .warnText.show{display:block}
+    .log{
+      font-family:var(--mono);
+      font-size:11px;
+      line-height:1.35;
+      white-space:pre-wrap;
+      background: rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:10px;
+      max-height:260px;
+      overflow:auto;
+    }
+
+    /* Modal */
+    .modal{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      background: rgba(0,0,0,.55);
+      padding:16px;
+      z-index:50;
+    }
+    .modal.show{display:flex}
+    .modal .box{
+      width:100%; max-width:720px;
+      background: linear-gradient(180deg, rgba(18,26,51,.98), rgba(12,18,36,.98));
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 20px;
+      box-shadow: 0 30px 60px rgba(0,0,0,.5);
+      overflow:hidden;
+    }
+    .modal .topBar{
+      padding:14px;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .modal .big{font-size:18px;font-weight:950;margin:0 0 8px}
+    .modal .content{padding:14px}
+    .toast{
+      position:fixed; left:50%; transform:translateX(-50%);
+      bottom:14px;
+      z-index:60;
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.12);
+      padding:10px 12px;
+      border-radius:999px;
+      color:rgba(255,255,255,.9);
+      font-size:12px;
+      display:none;
+      backdrop-filter: blur(10px);
+    }
+    .toast.show{display:block}
+    .small{font-size:12px;color:var(--muted);line-height:1.35}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div class="title">
+        <h1 id="uiTitle">Grinch Mafia — Host Tracker</h1>
+        <div class="pills">
+          <span class="pill" id="uiPill1">Long Mode • 6–7 players • no night eliminations</span>
+          <span class="pill" id="uiPill2">Auto win • +1 🎁/day cap • Step-by-step</span>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="secondary" id="btnLang">RU</button>
+        <button class="secondary" id="btnExport">Export log</button>
+        <button class="danger" id="btnReset">New game</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap grid">
+  <!-- LEFT: TRACKS + TIMER -->
+  <div class="card" id="leftCard">
+    <div class="hd">
+      <div class="h" id="leftHead">Tracks + Timer</div>
+      <div class="row" style="gap:8px">
+        <span class="tag" id="tagSaved">Saved ✓</span>
+        <span class="tag" id="tagState">Not started</span>
+      </div>
+    </div>
+    <div class="bd">
+      <div class="kpi">
+        <div class="k">
+          <div class="t" id="lblPresents">Presents 🎁</div>
+          <div class="v" id="kPresents">—</div>
+          <div class="sub" id="subPresents">0…start (not above)</div>
+        </div>
+        <div class="k">
+          <div class="t" id="lblHearts">Hearts ❤️</div>
+          <div class="v" id="kHearts">—</div>
+          <div class="sub" id="subHearts">0…8 (8 = win)</div>
+        </div>
+        <div class="k">
+          <div class="t" id="lblDay">Day</div>
+          <div class="v" id="kDay">—</div>
+          <div class="sub" id="subDay">Win check at end of Day 6</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stepHead">
+        <div>
+          <div class="name" id="capTitle">Presents cap</div>
+          <div class="sub" id="capSub">Max +1 🎁 per day from all sources</div>
+        </div>
+        <span class="tag warn" id="capTag">Today +🎁: —</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stepHead" style="margin-bottom:10px">
+        <div>
+          <div class="name" id="timerTitle">Timer</div>
+          <div class="sub"><span id="timerLeftLbl">Left:</span> <span class="mono" id="timerLeft">07:00</span></div>
+        </div>
+        <span class="tag" id="timerModeTag">—</span>
+      </div>
+
+      <label id="timerLabel">Timer (mm:ss)</label>
+      <input id="timerInput" class="mono" value="07:00"/>
+
+      <div class="btns" style="margin-top:10px">
+        <button id="tStart">Start</button>
+        <button class="secondary" id="tPause">Pause</button>
+        <button class="secondary" id="tReset">Reset</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <label id="presetsLabel">Quick presets</label>
+      <div class="btns">
+        <button class="secondary" id="presetDiscuss">07:00</button>
+        <button class="secondary" id="presetBark">00:30</button>
+        <button class="secondary" id="presetTie">01:00</button>
+        <button class="secondary" id="preset60">01:00</button>
+        <button class="secondary" id="preset2m">02:00</button>
+        <button class="secondary" id="preset5m">05:00</button>
+      </div>
+
+      <div class="hint" id="winHint"></div>
+      <div class="btns" style="margin-top:10px">
+        <button class="good" id="btnWinCheck">Check win now</button>
+        <button class="secondary" id="btnUndo">Undo (1)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: STEPS -->
+  <div class="card" id="rightCard">
+    <div class="hd">
+      <div class="h" id="rightHead">Step-by-step host flow</div>
+      <div class="row" style="gap:8px">
+        <span class="tag" id="tagStep">Step 1/7</span>
+        <span class="tag good" id="tagMaxSide">Max: Bad</span>
+        <span class="tag" id="tagBark">Bark: off</span>
+      </div>
+    </div>
+    <div class="bd">
+      <!-- STEP 1: SETUP -->
+      <div class="step" id="step1">
+        <div class="stepHead">
+          <div>
+            <div class="name" id="s1Title">1) Setup</div>
+            <div class="sub" id="s1Sub">Players + (optional) roles for correct win logic</div>
+          </div>
+          <span class="tag" id="s1Tag">—</span>
+        </div>
+        <div class="body">
+          <div class="two">
+            <div>
+              <label id="playersCountLbl">Players</label>
+              <select id="playersCount">
+                <option value="6">6</option>
+                <option value="7">7</option>
+              </select>
+            </div>
+            <div>
+              <label id="playersNamesLbl">Names (comma-separated)</label>
+              <input id="playersNames" placeholder="Anna, Peter, Maria..."/>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="two">
+            <div>
+              <label id="rolesModeLbl">Roles mode</label>
+              <select id="rolesMode">
+                <option value="known">Known to host (recommended)</option>
+                <option value="unknown">Unknown / I don’t want roles here</option>
+              </select>
+              <div class="hint" id="rolesHint"></div>
+            </div>
+            <div>
+              <label id="setupActionsLbl">Actions</label>
+              <div class="btns">
+                <button id="btnInit">Create game</button>
+                <button class="secondary" id="btnAutoRoles">Auto-assign roles</button>
+              </div>
+              <div class="warnText" id="setupWarn">—</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div id="rolesBox" style="display:none">
+            <div class="two">
+              <div>
+                <label id="rolesAssignLbl">Assign roles (host only)</label>
+                <div class="small" id="rolesAssignTip"></div>
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <div class="btns">
+                  <button class="secondary" id="btnClearRoles">Clear roles</button>
+                </div>
+              </div>
+            </div>
+            <div id="rolesTable" style="margin-top:10px"></div>
+          </div>
+        </div>
+        <div class="stepNav">
+          <button class="good" id="s1Next">Next → Night</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- STEP 2: NIGHT -->
+      <div class="step" id="step2">
+        <div class="stepHead">
+          <div>
+            <div class="name" id="s2Title">2) Night</div>
+            <div class="sub" id="s2Sub">Grinch → Max → Guard (steal affects 🎁 only)</div>
+          </div>
+          <span class="tag warn" id="s2Tag">—</span>
+        </div>
+        <div class="body">
+          <div class="two">
+            <div>
+              <label id="grinchTargetLbl">Grinch: steal target</label>
+              <select id="selGrinchTarget"></select>
+            </div>
+            <div>
+              <label id="guardTargetLbl">Guard: protect (no same two nights)</label>
+              <select id="selGuardTarget"></select>
+              <div class="warnText" id="guardWarn">Guard repeated last night — not allowed.</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="two">
+            <div>
+              <label id="maxTargetLbl">Max: target</label>
+              <select id="selMaxTarget"></select>
+            </div>
+            <div>
+              <label id="maxEffectLbl">Max: effect</label>
+              <select id="selMaxEffect">
+                <option value="ScentTrail">Scent Trail</option>
+                <option value="Rumor">Rumor</option>
+                <option value="BarkAlarm">Bark Alarm</option>
+              </select>
+              <div class="small" id="maxEffectHelp" style="margin-top:6px"></div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="btns">
+            <button id="btnResolveNight">Resolve night</button>
+            <button class="secondary" id="btnMaxSwitch">Max switches side (after Day 3)</button>
+          </div>
+          <div class="hint" id="nightExplain"></div>
+        </div>
+        <div class="stepNav">
+          <button class="secondary" id="s2Prev">← Back</button>
+          <button class="good" id="s2Next">Next → Morning</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- STEP 3: MORNING -->
+      <div class="step" id="step3">
+        <div class="stepHead">
+          <div>
+            <div class="name" id="s3Title">3) Morning</div>
+            <div class="sub" id="s3Sub">Announcement + Rumor / Bark Alarm</div>
+          </div>
+          <span class="tag" id="s3Tag">—</span>
+        </div>
+        <div class="body">
+          <label id="morningTextLbl">Morning text</label>
+          <textarea id="morningText" readonly></textarea>
+
+          <div class="divider"></div>
+
+          <div class="two">
+            <div class="card" style="box-shadow:none">
+              <div class="hd"><div class="h" id="rumorTitle">Rumor</div></div>
+              <div class="bd">
+                <div class="small" id="rumorLine">—</div>
+                <div class="btns" style="margin-top:10px">
+                  <button class="secondary" id="btnNewRumor">New rumor</button>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="box-shadow:none">
+              <div class="hd"><div class="h" id="barkTitle">Bark Alarm</div></div>
+              <div class="bd">
+                <div class="small" id="barkInfo">—</div>
+                <div class="btns" style="margin-top:10px">
+                  <button class="secondary" id="btnBarkSuccess">Success (+1 ❤️)</button>
+                  <button class="secondary" id="btnBarkFail">Fail (0)</button>
+                  <button class="secondary" id="btnSetBarkTimer">Set 00:30</button>
+                </div>
+                <div class="warnText" id="barkWarn">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stepNav">
+          <button class="secondary" id="s3Prev">← Back</button>
+          <button class="good" id="s3Next">Next → Day Event</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- STEP 4: DAY EVENT -->
+      <div class="step" id="step4">
+        <div class="stepHead">
+          <div>
+            <div class="name" id="s4Title">4) Day Event</div>
+            <div class="sub" id="s4Sub">Draw 1 event, mark success/fail, apply</div>
+          </div>
+          <span class="tag" id="eventTag">—</span>
+        </div>
+        <div class="body">
+          <div class="btns">
+            <button id="btnDrawEvent">Draw event</button>
+            <button class="secondary" id="btnRerollEvent">Reroll</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="card" style="box-shadow:none">
+            <div class="hd"><div class="h" id="eventName">—</div></div>
+            <div class="bd">
+              <div class="small" id="eventDesc">—</div>
+
+              <div class="divider"></div>
+
+              <div class="two">
+                <div>
+                  <label id="eventResultLbl">Result</label>
+                  <select id="selEventResult">
+                    <option value="none">Not decided</option>
+                    <option value="success">Success</option>
+                    <option value="fail">Fail</option>
+                  </select>
+                  <div class="warnText" id="eventCapWarn">Today 🎁 cap already used — event 🎁 won’t be added.</div>
+                </div>
+                <div>
+                  <label>&nbsp;</label>
+                  <button id="btnApplyEvent">Apply event</button>
+                  <div class="small" id="eventAppliedNote" style="margin-top:10px">—</div>
+                </div>
+              </div>
+
+              <div class="hint" id="eventHint"></div>
+            </div>
+          </div>
+        </div>
+        <div class="stepNav">
+          <button class="secondary" id="s4Prev">← Back</button>
+          <button class="good" id="s4Next">Next → Discussion</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- STEP 5: DISCUSSION + MAYOR -->
+      <div class="step" id="step5">
+        <div class="stepHead">
+          <div>
+            <div class="name" id="s5Title">5) Discussion</div>
+            <div class="sub" id="s5Sub">Mayor protects 2 BEFORE discussion; discussion 07:00</div>
+          </div>
+          <span class="tag" id="s5Tag">—</span>
+        </div>
+        <div class="body">
+          <div class="two">
+            <div>
+              <label id="mayorProtLbl">Mayor: protected from banishment (2)</label>
+              <div class="row">
+                <div style="flex:1;min-width:160px">
+                  <select id="selMayorProt1"></select>
+                </div>
+                <div style="flex:1;min-width:160px">
+                  <select id="selMayorProt2"></select>
+                </div>
+              </div>
+              <div class="warnText" id="mayorWarn">Mayor repeated protection from yesterday — not allowed.</div>
+              <div class="btns" style="margin-top:10px">
+                <button class="secondary" id="btnSaveMayor">Save protection</button>
+                <button class="secondary" id="btnSetDiscussTimer">Set 07:00</button>
+              </div>
+              <div class="small" id="mayorSavedNote" style="margin-top:10px">—</div>
+            </div>
+            <div>
+              <label id="cindyLbl">Cindy action</label>
+              <button class="secondary" id="btnCindyKindness">Cindy: Kindness Round (1×)</button>
+              <div class="small" id="cindyNote" style="margin-top:10px">—</div>
+              <div class="hint" id="cindyHint"></div>
+            </div>
+          </div>
+        </div>
+        <div class="stepNav">
+          <button class="secondary" id="s5Prev">← Back</button>
+          <button class="good" id="s5Next">Next → Vote</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- STEP 6: VOTE -->
+      <div class="step" id="step6">
+        <div class="stepHead">
+          <div>
+            <div class="name" id="s6Title">6) Vote</div>
+            <div class="sub" id="s6Sub">Tie rules + banish + reveal alignment (alignment only)</div>
+          </div>
+          <span class="tag" id="s6Tag">—</span>
+        </div>
+        <div class="body">
+          <div class="two">
+            <div>
+              <label id="tieLbl">Tie result</label>
+              <select id="selTie">
+                <option value="no">No tie</option>
+                <option value="yes">Tie happened → revote (no +1 ❤️ for “no tie”)</option>
+                <option value="double">Tie twice → no banishment (no +1 ❤️)</option>
+              </select>
+              <div class="btns" style="margin-top:10px">
+                <button class="secondary" id="btnSetTieTimer">Set 01:00</button>
+              </div>
+
+              <div class="divider"></div>
+
+              <label id="banishedLbl">Banished player</label>
+              <select id="selBanished"></select>
+              <div class="warnText" id="voteProtectedWarn">Cannot banish Mayor-protected player.</div>
+
+              <div class="divider"></div>
+
+              <label id="revealSideLbl">Host reveals alignment (for Hearts penalty)</label>
+              <select id="selRevealSide">
+                <option value="Good">Whoville (Good)</option>
+                <option value="Bad">Grinch Team (Bad)</option>
+              </select>
+
+              <div class="divider"></div>
+
+              <div id="grinchBanishedBox" style="display:none">
+                <label>
+                  <input type="checkbox" id="chkGrinchBanished"/>
+                  <span id="grinchBanishedLbl">Grinch was banished (manual)</span>
+                </label>
+                <div class="small" id="grinchBanishedTip"></div>
+              </div>
+
+              <div class="btns" style="margin-top:10px">
+                <button id="btnApplyVote">Apply vote</button>
+              </div>
+
+              <div class="small" id="voteNote" style="margin-top:10px">—</div>
+            </div>
+
+            <div>
+              <div class="card" style="box-shadow:none">
+                <div class="hd">
+                  <div class="h" id="spiritTitle">Holiday Spirit (optional)</div>
+                </div>
+                <div class="bd">
+                  <div class="small" id="spiritMeta">—</div>
+
+                  <div class="divider"></div>
+
+                  <label id="spiritWhoLbl">Who uses bonus</label>
+                  <select id="selSpiritWho"></select>
+
+                  <label id="spiritEffectLbl" style="margin-top:10px">Effect</label>
+                  <select id="selSpiritEffect">
+                    <option value="addHeart">+1 Heart</option>
+                    <option value="cancelWrong">Cancel -1 Heart for wrong banishment</option>
+                  </select>
+
+                  <div class="btns" style="margin-top:10px">
+                    <button class="secondary" id="btnUseSpirit">Use bonus</button>
+                  </div>
+
+                  <div class="small" id="spiritNote" style="margin-top:10px">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stepNav">
+          <button class="secondary" id="s6Prev">← Back</button>
+          <button class="good" id="s6Next">Next → End of Day</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- STEP 7: END OF DAY -->
+      <div class="step" id="step7">
+        <div class="stepHead">
+          <div>
+            <div class="name" id="s7Title">7) End of Day</div>
+            <div class="sub" id="s7Sub">Apply Hearts checklist → win check → next day</div>
+          </div>
+          <span class="tag" id="s7Tag">—</span>
+        </div>
+        <div class="body">
+          <div class="two">
+            <div>
+              <div class="card" style="box-shadow:none">
+                <div class="hd"><div class="h" id="heartsChecklistTitle">Hearts checklist</div></div>
+                <div class="bd" id="heartsChecks">
+                  <label><input type="checkbox" id="chkCindyAlive"> <span id="lblCindyAlive">Cindy alive (+1 ❤️)</span></label>
+                  <label><input type="checkbox" id="chkNoTie"> <span id="lblNoTie">Vote without tie (+1 ❤️)</span></label>
+                  <label><input type="checkbox" id="chkEventHeart"> <span id="lblEventHeart">Day Event gave ❤️ and succeeded (+1 ❤️)</span></label>
+                  <label><input type="checkbox" id="chkWrongBanish"> <span id="lblWrongBanish">Wrong banishment: Good (-1 ❤️)</span></label>
+
+                  <div class="divider"></div>
+
+                  <button id="btnApplyEOD">Apply end of day</button>
+                  <div class="small" id="eodPreview" style="margin-top:10px">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card" style="box-shadow:none">
+                <div class="hd"><div class="h" id="logHead">Game log</div></div>
+                <div class="bd">
+                  <div class="log" id="logBox">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hint" id="rulesHint"></div>
+        </div>
+        <div class="stepNav">
+          <button class="secondary" id="s7Prev">← Back</button>
+          <button class="good" id="btnNextDay">Next day (go to Night)</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- WIN MODAL -->
+<div class="modal" id="winModal">
+  <div class="box">
+    <div class="topBar">
+      <div class="tag" id="winModalTitle">Game over</div>
+      <button class="secondary" id="btnCloseWin">Close</button>
+    </div>
+    <div class="content">
+      <div class="big" id="winTitle">—</div>
+      <div class="small" id="winReason">—</div>
+      <div class="btns" style="margin-top:12px">
+        <button class="danger" id="btnHardStop">Stop (lock UI)</button>
+        <button class="secondary" id="btnNewGame2">New game</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">—</div>
+
+<script>
+(() => {
+  const LS_KEY = "grinch_mafia_step_tracker_v1";
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- I18N (minimal, but clear) ----------
+  const I18N = {
+    ru:{
+      uiTitle:"Grinch Mafia — Трекер ведущего (пошагово)",
+      pill1:"Long Mode • 6–7 игроков • без ночных выбываний",
+      pill2:"Автопобеда • лимит +1 🎁/день • один экран",
+      leftHead:"Треки + Таймер",
+      rightHead:"Пошаговый сценарий ведущего",
+      stateNotStarted:"Не начато",
+      stateRunning:"Идёт",
+      saved:"Сохранено ✓",
+      capTitle:"Лимит 🎁",
+      capSub:"Максимум +1 🎁 за день из всех источников",
+      timerTitle:"Таймер",
+      timerLeftLbl:"Осталось:",
+      timerLabel:"Таймер (мм:сс)",
+      presets:"Пресеты",
+      export:"Экспорт лога",
+      newGame:"Новая игра",
+      lang:"RU",
+      winHint:"<b>Whoville:</b> ❤️=8 ИЛИ Grinch изгнан при 🎁≥6.<br><b>Grinch:</b> 🎁=0 ИЛИ конец Day 6 при 🎁≤3.<br><span class='small'>Ночью никто не выбывает. Ночь влияет только на 🎁.</span>",
+      checkWin:"Проверить победу сейчас",
+      undo:"Откат (1)",
+
+      s1Title:"1) Старт",
+      s1Sub:"Игроки + (опционально) роли для корректной победы",
+      players:"Игроков",
+      names:"Имена (через запятую)",
+      rolesMode:"Режим ролей",
+      rolesKnown:"Роли известны ведущему (рекомендую)",
+      rolesUnknown:"Роли не хочу вводить",
+      rolesHint:"Если роли известны — приложение корректно понимает «Grinch изгнан». Если не вводить — ты отметишь это вручную в голосовании.",
+      create:"Создать партию",
+      autoRoles:"Авто-раздать роли",
+      clearRoles:"Очистить роли",
+      rolesAssign:"Назначить роли (только ведущий)",
+      rolesAssignTip:"Роли не показывай игрокам. Это для корректной проверки победы и автозаполнения чек-листов.",
+      nextNight:"Дальше → Ночь",
+
+      s2Title:"2) Ночь",
+      s2Sub:"Grinch → Max → Guard (кража влияет только на 🎁)",
+      grinchTarget:"Grinch: цель кражи",
+      guardTarget:"Guard: защита (нельзя 2 ночи подряд)",
+      maxTarget:"Max: цель",
+      maxEffect:"Max: эффект",
+      maxHelp:"Scent Trail: Guard не спасёт цель. Rumor: утром слух (не улика). Bark: 30 сек тишины утром (+1 ❤️ при успехе).",
+      resolveNight:"Разрешить ночь",
+      maxSwitch:"Max переходит (после Day 3)",
+      nightExplain:"Алгоритм: если Guard защищал цель Grinch И Max НЕ сделал Scent Trail на этой цели → кражи нет. Иначе кража есть → 🎁 -1.",
+
+      s3Title:"3) Утро",
+      s3Sub:"Объявление + Rumor / Bark Alarm",
+      morningText:"Утренний текст",
+      rumor:"Rumor",
+      newRumor:"Новый слух",
+      bark:"Bark Alarm",
+      barkInfo:"Если Bark активен: 30 секунд тишины. Успех → +1 ❤️ (сразу утром).",
+      barkSuccess:"Успех (+1 ❤️)",
+      barkFail:"Провал (0)",
+      setBark:"Поставить 00:30",
+      nextEvent:"Дальше → Day Event",
+
+      s4Title:"4) Day Event",
+      s4Sub:"Вытяни событие, отметь успех/провал, применяй",
+      drawEvent:"Вытянуть событие",
+      reroll:"Перевытянуть",
+      eventResult:"Результат",
+      applyEvent:"Применить событие",
+      eventHint:"Правило: 🎁-события не могут идти 2 дня подряд — приложение автоматически перевытягивает. Лимит: максимум +1 🎁 в день (событие + Cindy вместе).",
+      nextDiscuss:"Дальше → Обсуждение",
+
+      s5Title:"5) Обсуждение",
+      s5Sub:"Mayor выбирает 2 защищённых ДО обсуждения; обсуждение 07:00",
+      mayorProt:"Mayor: защищены (2)",
+      saveProt:"Сохранить защиту",
+      setDiscuss:"Поставить 07:00",
+      cindy:"Действие Cindy",
+      kindness:"Cindy: Kindness Round (1×)",
+      cindyHint:"Kindness обычно даёт +1 🎁, НО если сегодня уже был +1 🎁 (от Day Event), тогда вместо 🎁 даётся +1 ❤️.",
+      nextVote:"Дальше → Голосование",
+
+      s6Title:"6) Голосование",
+      s6Sub:"Ничьи + изгнание + раскрыть только сторону",
+      tie:"Ничья",
+      tieNo:"Без ничьей",
+      tieYes:"Была ничья → переголосование (нет +1 ❤️ за «без ничьей»)",
+      tieDouble:"Ничья дважды → никого не изгоняем (нет +1 ❤️)",
+      setTie:"Поставить 01:00",
+      banished:"Изгнанный игрок",
+      reveal:"Открыть сторону (для штрафа Hearts)",
+      grinchBanished:"Grinch изгнан (вручную)",
+      applyVote:"Применить голосование",
+      voteNote:"Ведущий объявляет только сторону: “Whoville (Good)” или “Grinch Team (Bad)”. Роль не раскрываем.",
+      spiritTitle:"Holiday Spirit (опционально)",
+      spiritMeta:"Изгнанный становится «духом». Каждый дух: 1 раз за игру — +1 ❤️ ИЛИ отмена -1 ❤️ за ошибку.",
+      spiritWho:"Кто использует бонус",
+      spiritEffect:"Эффект",
+      useBonus:"Применить бонус",
+      nextEod:"Дальше → Конец дня",
+
+      s7Title:"7) Конец дня",
+      s7Sub:"Чек-лист Hearts → победа → следующий день",
+      heartsChecklist:"Hearts чек-лист",
+      cindyAlive:"Cindy жива (+1 ❤️)",
+      noTie:"Голосование без ничьей (+1 ❤️)",
+      eventHeart:"Day Event дал ❤️ и выполнен (+1 ❤️)",
+      wrongBanish:"Ошибка: изгнали Whoville (-1 ❤️)",
+      applyEod:"Применить конец дня",
+      nextDay:"Следующий день (к Ночи)",
+      log:"Лог",
+
+      modalTitle:"Игра завершена",
+      close:"Закрыть",
+      stop:"Остановить (заблокировать)",
+      winNone:"Победы нет",
+
+      toastTime:"⏰ Время!",
+      guardRepeat:"Guard повторил защиту прошлой ночи — нельзя.",
+      mayorRepeat:"Mayor повторил защиту как вчера — нельзя.",
+      mayorNeedTwo:"Mayor должен выбрать 2 разных защищённых (если живых ≥ 2).",
+      cannotBanishProtected:"Нельзя изгнать защищённого Mayor.",
+      maxTooEarly:"Max может перейти только после Day 3.",
+      maxAlready:"Max уже переходил.",
+      kindnessUsed:"Kindness Round уже использовали.",
+      needGame:"Сначала создай партию.",
+      fillNight:"Заполни все ночные выборы.",
+      spiritUsed:"Этот дух уже использовал бонус (1 раз за игру).",
+      spiritNoWrong:"Нельзя отменить -1 ❤️: сегодня не было ошибочного изгнания (Good).",
+    },
+    en:{
+      uiTitle:"Grinch Mafia — Host Tracker (Step-by-step)",
+      pill1:"Long Mode • 6–7 players • no night eliminations",
+      pill2:"Auto win • +1 🎁/day cap • single screen",
+      leftHead:"Tracks + Timer",
+      rightHead:"Step-by-step host flow",
+      stateNotStarted:"Not started",
+      stateRunning:"Running",
+      saved:"Saved ✓",
+      capTitle:"Presents cap",
+      capSub:"Max +1 🎁 per day from all sources",
+      timerTitle:"Timer",
+      timerLeftLbl:"Left:",
+      timerLabel:"Timer (mm:ss)",
+      presets:"Presets",
+      export:"Export log",
+      newGame:"New game",
+      lang:"EN",
+      winHint:"<b>Whoville:</b> ❤️=8 OR Grinch banished while 🎁≥6.<br><b>Grinch:</b> 🎁=0 OR end of Day 6 with 🎁≤3.<br><span class='small'>No night eliminations. Night affects 🎁 only.</span>",
+      checkWin:"Check win now",
+      undo:"Undo (1)",
+
+      s1Title:"1) Setup",
+      s1Sub:"Players + (optional) roles for correct win logic",
+      players:"Players",
+      names:"Names (comma-separated)",
+      rolesMode:"Roles mode",
+      rolesKnown:"Known to host (recommended)",
+      rolesUnknown:"Unknown / don’t enter roles",
+      rolesHint:"If roles are known, app can correctly detect “Grinch banished”. If unknown, you’ll tick it manually in Vote step.",
+      create:"Create game",
+      autoRoles:"Auto-assign roles",
+      clearRoles:"Clear roles",
+      rolesAssign:"Assign roles (host only)",
+      rolesAssignTip:"Do not show to players. Used only for win check & auto checklists.",
+      nextNight:"Next → Night",
+
+      s2Title:"2) Night",
+      s2Sub:"Grinch → Max → Guard (steal affects 🎁 only)",
+      grinchTarget:"Grinch: steal target",
+      guardTarget:"Guard: protect (no same two nights)",
+      maxTarget:"Max: target",
+      maxEffect:"Max: effect",
+      maxHelp:"Scent Trail: Guard can’t save target. Rumor: morning line (not evidence). Bark: 30s silence (+1 ❤️ on success).",
+      resolveNight:"Resolve night",
+      maxSwitch:"Max switches side (after Day 3)",
+      nightExplain:"Logic: if Guard protected Grinch target AND Max did NOT use Scent Trail on that target → no steal. Otherwise steal → 🎁 -1.",
+
+      s3Title:"3) Morning",
+      s3Sub:"Announcement + Rumor / Bark Alarm",
+      morningText:"Morning text",
+      rumor:"Rumor",
+      newRumor:"New rumor",
+      bark:"Bark Alarm",
+      barkInfo:"If Bark active: 30 seconds of silence. Success → +1 ❤️ (immediately in morning).",
+      barkSuccess:"Success (+1 ❤️)",
+      barkFail:"Fail (0)",
+      setBark:"Set 00:30",
+      nextEvent:"Next → Day Event",
+
+      s4Title:"4) Day Event",
+      s4Sub:"Draw event, mark success/fail, apply",
+      drawEvent:"Draw event",
+      reroll:"Reroll",
+      eventResult:"Result",
+      applyEvent:"Apply event",
+      eventHint:"Rule: 🎁 events cannot happen two days in a row — app auto-rerolls. Cap: max +1 🎁 per day total (event + Cindy).",
+      nextDiscuss:"Next → Discussion",
+
+      s5Title:"5) Discussion",
+      s5Sub:"Mayor protects 2 BEFORE discussion; discussion 07:00",
+      mayorProt:"Mayor: protected (2)",
+      saveProt:"Save protection",
+      setDiscuss:"Set 07:00",
+      cindy:"Cindy action",
+      kindness:"Cindy: Kindness Round (1×)",
+      cindyHint:"Kindness normally gives +1 🎁, BUT if a Day Event already gave +1 🎁 today, then it gives +1 ❤️ instead.",
+      nextVote:"Next → Vote",
+
+      s6Title:"6) Vote",
+      s6Sub:"Tie rules + banish + reveal alignment only",
+      tie:"Tie result",
+      tieNo:"No tie",
+      tieYes:"Tie happened → revote (no +1 ❤️ for “no tie”)",
+      tieDouble:"Tie twice → no banishment (no +1 ❤️)",
+      setTie:"Set 01:00",
+      banished:"Banished player",
+      reveal:"Reveal alignment (for Hearts penalty)",
+      grinchBanished:"Grinch banished (manual)",
+      applyVote:"Apply vote",
+      voteNote:"Host reveals alignment only: “Whoville (Good)” or “Grinch Team (Bad)”. No role reveal.",
+      spiritTitle:"Holiday Spirit (optional)",
+      spiritMeta:"Banished player becomes a Spirit. Each spirit once per game: +1 ❤️ OR cancel -1 ❤️ for wrong banishment.",
+      spiritWho:"Who uses bonus",
+      spiritEffect:"Effect",
+      useBonus:"Use bonus",
+      nextEod:"Next → End of Day",
+
+      s7Title:"7) End of Day",
+      s7Sub:"Hearts checklist → win → next day",
+      heartsChecklist:"Hearts checklist",
+      cindyAlive:"Cindy alive (+1 ❤️)",
+      noTie:"Vote without tie (+1 ❤️)",
+      eventHeart:"Day Event gave ❤️ and succeeded (+1 ❤️)",
+      wrongBanish:"Wrong banishment: Good (-1 ❤️)",
+      applyEod:"Apply end of day",
+      nextDay:"Next day (to Night)",
+      log:"Game log",
+
+      modalTitle:"Game over",
+      close:"Close",
+      stop:"Stop (lock UI)",
+      winNone:"No win yet",
+
+      toastTime:"⏰ Time!",
+      guardRepeat:"Guard repeated last night — not allowed.",
+      mayorRepeat:"Mayor repeated yesterday — not allowed.",
+      mayorNeedTwo:"Mayor must pick 2 different protected players (if alive ≥ 2).",
+      cannotBanishProtected:"Cannot banish Mayor-protected player.",
+      maxTooEarly:"Max can switch only after Day 3.",
+      maxAlready:"Max already switched.",
+      kindnessUsed:"Kindness Round already used.",
+      needGame:"Create game first.",
+      fillNight:"Fill all night choices.",
+      spiritUsed:"This spirit already used their one-time bonus.",
+      spiritNoWrong:"Cannot cancel -1 ❤️: no wrong banishment today (Good).",
+    }
+  };
+
+  function getLang(){
+    const saved = localStorage.getItem(LS_KEY + ":lang");
+    if(saved === "ru" || saved === "en") return saved;
+    return "ru";
+  }
+  let lang = getLang();
+  function t(key){ return (I18N[lang] && I18N[lang][key]) || key; }
+
+  // ---------- Game state ----------
+  const DEFAULT_STATE = () => ({
+    started:false,
+    locked:false,
+    step:1,                 // 1..7
+    playersCount:6,
+    players:[],              // {name, role, alive, spiritUsed}
+    rolesMode:"known",        // known/unknown
+    startPresents:10,
+    presents:10,
+    hearts:0,
+    day:1,
+
+    // day flags
+    presentGainedToday:false,
+
+    // night picks
+    night:{ grinch:null, guard:null, maxTarget:null, maxEffect:"Rumor" },
+    lastGuard:null,
+
+    // max
+    maxSide:"Bad",           // Bad until switch
+    maxSwitched:false,
+
+    // morning effects status
+    barkActive:false,
+    barkResolved:false,
+    rumorActive:false,
+    rumorText:"",
+
+    // day event
+    currentEvent:null,       // event object
+    lastEventType:null,       // "present"/"heart"/"mechanic" (previous day applied)
+    eventApplied:false,
+    eventResult:"none",
+
+    // mayor
+    mayorProt:[null,null],
+    mayorLastProt:[null,null],
+    mayorSaved:false,
+
+    // vote
+    tie:"no",                // no/yes/double
+    banished:null,
+    revealSide:"Good",
+    wrongBanishToday:false,
+    grinchBanishedToday:false, // computed or manual
+
+    // spirit (day-level effect only)
+    spiritCanceledWrong:false,
+
+    // Cindy
+    cindyKindnessUsed:false,
+
+    // log + undo
+    log:[],
+    undo:null
+  });
+
+ let state = loadState() || DEFAULT_STATE();
+state.undo = null;
+
+
+ function saveState(){
+  try{
+    const { undo, ...persist } = state;              // не сохраняем undo
+    localStorage.setItem(LS_KEY, JSON.stringify(persist));
+    $('tagSaved').textContent = t('saved');
+  }catch(e){
+    console.error(e);
+    $('tagSaved').textContent = "NOT saved";
+    toast(lang==="ru" ? "Не удалось сохранить (память браузера заполнена)" : "Save failed (storage full)");
+  }
+}
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return null;
+      const obj = JSON.parse(raw);
+      return obj;
+    }catch(e){ return null; }
+  }
+
+  // ---------- Toast ----------
+  let toastTimer=null;
+  function toast(msg){
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>el.classList.remove('show'), 1400);
+  }
+
+  // ---------- Helpers ----------
+  const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+  const byAlive = (p)=>p.alive;
+  const fmt = (n)=>String(n).padStart(2,'0');
+  function parseMMSS(s){
+    const m = String(s||"").trim().match(/^(\d{1,2}):(\d{2})$/);
+    if(!m) return null;
+    const mm = parseInt(m[1],10);
+    const ss = parseInt(m[2],10);
+    if(Number.isNaN(mm)||Number.isNaN(ss)||ss>59) return null;
+    return mm*60 + ss;
+  }
+  function mmss(total){
+    total = Math.max(0, Math.floor(total));
+    const mm = Math.floor(total/60);
+    const ss = total%60;
+    return `${fmt(mm)}:${fmt(ss)}`;
+  }
+  function addLog(line){
+    const stamp = `D${state.day} • ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+    state.log.unshift(`${stamp} — ${line}`);
+    if(state.log.length>250) state.log.pop();
+  }
+ function setUndo(){
+  const snap = JSON.parse(JSON.stringify(state));
+  snap.undo = null;                 // критично: не вкладываем undo в undo
+  state.undo = JSON.stringify(snap);
+}
+  function doUndo(){
+    if(!state.undo){ toast(t('winNone')); return; }
+    try{
+      state = JSON.parse(state.undo);
+      state.undo = null;
+      saveState();
+      render();
+      toast(t('undo'));
+    }catch(e){}
+  }
+
+  // ---------- Events deck (24) ----------
+  const EVENTS = [
+    // 🎁 1..6
+    {id:1,type:"present",
+      name:{ru:"Snowstorm 🎁", en:"Snowstorm 🎁"},
+      text:{ru:"Обсуждение короче на 2 минуты (поставь 05:00).", en:"Shorten discussion by 2 minutes (set 05:00)."},
+      onSuccess:{present:+1}, onFail:{}},
+    {id:2,type:"present",
+      name:{ru:"Gift Wrap Challenge 🎁⚠️", en:"Gift Wrap Challenge 🎁⚠️"},
+      text:{ru:"60 сек без перебиваний (1 оговорка допустима). Успех: +1 🎁, провал: -1 ❤️.", en:"60s no interruptions (1 slip ok). Success: +1 🎁, fail: -1 ❤️."},
+      onSuccess:{present:+1}, onFail:{heart:-1}},
+    {id:3,type:"present",
+      name:{ru:"Kindness Round 🎁", en:"Kindness Round 🎁"},
+      text:{ru:"По кругу 10–15 сек доброй фразы, без перебиваний. Успех: +1 🎁 (лимит).", en:"Round of kind lines. Success: +1 🎁 (cap)."},
+      onSuccess:{present:+1}, onFail:{}},
+    {id:4,type:"present",
+      name:{ru:"Repair the Sleigh 🎁⚠️", en:"Repair the Sleigh 🎁⚠️"},
+      text:{ru:"3 идеи за 60 сек. Не набрали 3 — провал (-1 ❤️). Успех: +1 🎁.", en:"3 ideas in 60s. Fail: -1 ❤️. Success: +1 🎁."},
+      onSuccess:{present:+1}, onFail:{heart:-1}},
+    {id:5,type:"present",
+      name:{ru:"Found Gift 🎁", en:"Found Gift 🎁"},
+      text:{ru:"Случайный игрок 20 сек: «кому бы подарил и почему». Успех: +1 🎁 (лимит).", en:"Random player 20s. Success: +1 🎁 (cap)."},
+      onSuccess:{present:+1}, onFail:{}},
+    {id:6,type:"present",
+      name:{ru:"Town Cleanup 🎁", en:"Town Cleanup 🎁"},
+      text:{ru:"2 минуты говорит только тот, у кого «микрофон». Успех: +1 🎁.", en:"2 minutes: only mic holder talks. Success: +1 🎁."},
+      onSuccess:{present:+1}, onFail:{}},
+
+    // ❤️ 7..18
+    {id:7,type:"heart", name:{ru:"Town Choir ❤️", en:"Town Choir ❤️"},
+      text:{ru:"1 минута без перебиваний. Успех: +1 ❤️.", en:"1 minute no interruptions. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:8,type:"heart", name:{ru:"Turn-Taking ❤️", en:"Turn-Taking ❤️"},
+      text:{ru:"Каждому по 30 сек (в сумме ~5 минут). Успех: +1 ❤️.", en:"30s each (~5 min total). Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:9,type:"heart", name:{ru:"Whisper Round ❤️", en:"Whisper Round ❤️"},
+      text:{ru:"2 минуты все говорят шёпотом. Успех: +1 ❤️.", en:"2 minutes whisper-only. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:10,type:"heart", name:{ru:"Secret Vote ❤️", en:"Secret Vote ❤️"},
+      text:{ru:"Пробное тихое голосование. Успех: +1 ❤️.", en:"Practice secret vote. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:11,type:"heart", name:{ru:"No-Accusation Minute ❤️", en:"No-Accusation Minute ❤️"},
+      text:{ru:"60 сек без прямых обвинений. Успех: +1 ❤️.", en:"60s no direct accusations. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:12,type:"heart", name:{ru:"One-Sentence Rule ❤️", en:"One-Sentence Rule ❤️"},
+      text:{ru:"2 минуты: каждая реплика — 1 предложение. Успех: +1 ❤️.", en:"2 minutes: one sentence per turn. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:13,type:"heart", name:{ru:"Apology Token ❤️", en:"Apology Token ❤️"},
+      text:{ru:"Кто-то признаёт сомнение/ошибку. Успех: +1 ❤️.", en:"Someone admits doubt/mistake. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:14,type:"heart", name:{ru:"Warm Welcome ❤️", en:"Warm Welcome ❤️"},
+      text:{ru:"Комплимент про логику/действия. Успех: +1 ❤️.", en:"Compliment logic/actions. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:15,type:"heart", name:{ru:"Mayor’s Order ❤️", en:"Mayor’s Order ❤️"},
+      text:{ru:"Mayor объясняет защиту 1 фразой. Успех: +1 ❤️.", en:"Mayor explains protection in 1 line. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:16,type:"heart", name:{ru:"Guard’s Oath ❤️", en:"Guard’s Oath ❤️"},
+      text:{ru:"Guard обещает защитить «самого подозрительного». Успех: +1 ❤️.", en:"Guard vows to protect ‘most suspicious’. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:17,type:"heart", name:{ru:"Silent Start ❤️", en:"Silent Start ❤️"},
+      text:{ru:"30 сек тишины. Успех: +1 ❤️.", en:"30 seconds silence. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+    {id:18,type:"heart", name:{ru:"Two Questions Only ❤️", en:"Two Questions Only ❤️"},
+      text:{ru:"Каждому максимум 2 вопроса. Успех: +1 ❤️.", en:"Max 2 questions per player. Success: +1 ❤️."},
+      onSuccess:{heart:+1}, onFail:{}},
+
+    // mechanics 19..24
+    {id:19,type:"mechanic", name:{ru:"Evidence Token", en:"Evidence Token"},
+      text:{ru:"Ведущий даёт 1 общую нейтральную подсказку (без целей).", en:"Host gives 1 global neutral clue (no target)."},
+      onSuccess:{}, onFail:{}},
+    {id:20,type:"mechanic", name:{ru:"Gift Audit ⚠️", en:"Gift Audit ⚠️"},
+      text:{ru:"Если сегодня изгнали Whoville (ошибка) → доп. -1 🎁 в конце дня.", en:"If wrong banish today (Good) → extra -1 🎁 at end of day."},
+      onSuccess:{}, onFail:{}},
+    {id:21,type:"mechanic", name:{ru:"Spotlight", en:"Spotlight"},
+      text:{ru:"1 игрок говорит 30 сек, остальные молчат.", en:"1 player speaks 30s, others silent."},
+      onSuccess:{}, onFail:{}},
+    {id:22,type:"mechanic", name:{ru:"Double Vote", en:"Double Vote"},
+      text:{ru:"Разреши 2 тура голосования между лидерами.", en:"Allow 2 vote rounds between leaders."},
+      onSuccess:{}, onFail:{}},
+    {id:23,type:"mechanic", name:{ru:"Open Hands", en:"Open Hands"},
+      text:{ru:"Руки на столе. Уменьшает перебивания.", en:"Hands on table. Reduces interruptions."},
+      onSuccess:{}, onFail:{}},
+    {id:24,type:"mechanic", name:{ru:"Holiday Spirit Assist", en:"Holiday Spirit Assist"},
+      text:{ru:"Разреши духу применить 1-разовый бонус (если ещё не использован).", en:"Allow Spirit to use their one-time bonus (if unused)."},
+      onSuccess:{}, onFail:{}},
+  ];
+
+  const RUMORS = [
+    {ru:"Ходят слухи, что {X} крутился рядом с подарками… но это только слух.", en:"There’s a rumor that {X} was near the presents… but it’s not evidence."},
+    {ru:"Кто-то шепчет, что {X} слишком спокойно реагирует на пропажу… но это не факт.", en:"Someone whispers that {X} reacts too calmly… but it’s not a fact."},
+    {ru:"Говорят, что {X} знает больше, чем говорит… но мы не уверены.", en:"They say {X} knows more than they say… but we’re not sure."},
+    {ru:"Слух: {X} сегодня избегает прямых ответов… но это не улика.", en:"Rumor: {X} avoids direct answers today… but it’s not evidence."},
+    {ru:"Ходят слухи про {X}: кто-то видел, как он смотрел на трек 🎁 слишком внимательно… но это просто слова.", en:"Rumor about {X}: someone saw them watching the 🎁 track too closely… just words."},
+  ];
+
+  // ---------- Timer (steady seconds, no skipping) ----------
+  let timer = {
+    total: 420,
+    left: 420,
+    running: false,
+    interval: null,
+    mode: "",
+    endAt: null
+  };
+
+  function timerSet(mmssStr, modeLabel=""){
+    const v = parseMMSS(mmssStr);
+    if(v===null){ toast("mm:ss"); return; }
+    timer.total = v;
+    timer.left  = v;
+    timer.mode  = modeLabel;
+    timer.endAt = null;
+    timerStop();
+    updateTimerUI();
+  }
+
+  function computeLeft(){
+    if(!timer.endAt) return timer.left;
+    const msLeft = timer.endAt - Date.now();
+    return Math.max(0, Math.ceil(msLeft / 1000));
+  }
+
+  function tick(){
+    const newLeft = computeLeft();
+    if(newLeft !== timer.left){
+      timer.left = newLeft;
+      updateTimerUI();
+    }
+    if(timer.left <= 0){
+      timer.left = 0;
+      timerStop();
+      updateTimerUI();
+      toast(t('toastTime'));
+    }
+  }
+
+  function timerStart(){
+    if(timer.running) return;
+    if(!timer.endAt){
+      timer.endAt = Date.now() + timer.left * 1000;
+    }else{
+      timer.left = computeLeft();
+      timer.endAt = Date.now() + timer.left * 1000;
+    }
+    timer.running = true;
+    timer.interval = setInterval(tick, 250);
+    tick();
+    updateTimerUI();
+  }
+
+  function timerStop(){
+    timer.running = false;
+    if(timer.interval){
+      clearInterval(timer.interval);
+      timer.interval = null;
+    }
+    if(timer.endAt){
+      timer.left = computeLeft();
+      timer.endAt = null;
+    }
+    updateTimerUI();
+  }
+
+  function timerReset(){
+    timerStop();
+    timer.left = timer.total;
+    timer.endAt = null;
+    updateTimerUI();
+  }
+
+  function updateTimerUI(){
+    $('timerLeft').textContent = mmss(timer.left);
+    $('timerModeTag').textContent = timer.mode ? timer.mode : "—";
+    $('timerInput').value = mmss(timer.total);
+
+    $('tStart').textContent = (lang==="ru" ? "Старт" : "Start");
+    $('tPause').textContent = (lang==="ru" ? "Пауза" : "Pause");
+    $('tReset').textContent = (lang==="ru" ? "Сброс" : "Reset");
+  }
+
+  // ---------- Roles ----------
+  const ROLE_SETS = {
+    6:["Grinch","Max","Cindy","Mayor","Guard","Citizen"],
+    7:["Grinch","Max","Cindy","Mayor","Guard","Citizen","Citizen"]
+  };
+  function roleLabel(role){
+    const map = {
+      Grinch: {ru:"Grinch", en:"Grinch"},
+      Max: {ru:"Max", en:"Max"},
+      Cindy: {ru:"Cindy Lou", en:"Cindy Lou"},
+      Mayor: {ru:"Mayor", en:"Mayor"},
+      Guard: {ru:"Mayor’s Guard", en:"Mayor’s Guard"},
+      Citizen: {ru:"Citizen", en:"Citizen"},
+    };
+    return (map[role] ? map[role][lang] : role);
+  }
+  function findRoleIndex(role){
+    const idx = state.players.findIndex(p => p.role === role);
+    return idx >= 0 ? idx : null;
+  }
+
+  // ---------- UI wiring ----------
+  function applyI18n(){
+    $('uiTitle').textContent = t('uiTitle');
+    $('uiPill1').textContent = t('pill1');
+    $('uiPill2').textContent = t('pill2');
+
+    $('leftHead').textContent = t('leftHead');
+    $('rightHead').textContent = t('rightHead');
+
+    $('lblPresents').textContent = (lang==="ru" ? "Подарки 🎁" : "Presents 🎁");
+$('lblHearts').textContent   = (lang==="ru" ? "Сердца ❤️" : "Hearts ❤️");
+$('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
+
+    $('subPresents').textContent = lang==="ru" ? "0…старт (не выше)" : "0…start (not above)";
+    $('subHearts').textContent = lang==="ru" ? "0…8 (8 = победа)" : "0…8 (8 = win)";
+    $('subDay').textContent = lang==="ru" ? "Проверка в конце Day 6" : "Win check at end of Day 6";
+
+    $('tagSaved').textContent = t('saved');
+    $('tagState').textContent = state.started ? t('stateRunning') : t('stateNotStarted');
+
+    $('capTitle').textContent = t('capTitle');
+    $('capSub').textContent = t('capSub');
+    $('timerTitle').textContent = t('timerTitle');
+    $('timerLeftLbl').textContent = t('timerLeftLbl');
+    $('timerLabel').textContent = t('timerLabel');
+    $('presetsLabel').textContent = t('presets');
+
+    $('btnExport').textContent = t('export');
+    $('btnReset').textContent = t('newGame');
+    $('btnLang').textContent = t('lang');
+
+    $('winHint').innerHTML = t('winHint');
+    $('btnWinCheck').textContent = t('checkWin');
+    $('btnUndo').textContent = t('undo');
+
+    // Steps titles
+    $('s1Title').textContent = t('s1Title');
+    $('s1Sub').textContent = t('s1Sub');
+    $('playersCountLbl').textContent = t('players');
+    $('playersNamesLbl').textContent = t('names');
+    $('rolesModeLbl').textContent = t('rolesMode');
+    $('rolesMode').options[0].text = t('rolesKnown');
+    $('rolesMode').options[1].text = t('rolesUnknown');
+    $('rolesHint').textContent = t('rolesHint');
+    $('btnInit').textContent = t('create');
+    $('btnAutoRoles').textContent = t('autoRoles');
+    $('btnClearRoles').textContent = t('clearRoles');
+    $('rolesAssignLbl').textContent = t('rolesAssign');
+    $('rolesAssignTip').textContent = t('rolesAssignTip');
+    $('s1Next').textContent = t('nextNight');
+
+    $('s2Title').textContent = t('s2Title');
+    $('s2Sub').textContent = t('s2Sub');
+    $('grinchTargetLbl').textContent = t('grinchTarget');
+    $('guardTargetLbl').textContent = t('guardTarget');
+    $('maxTargetLbl').textContent = t('maxTarget');
+    $('maxEffectLbl').textContent = t('maxEffect');
+    $('maxEffectHelp').textContent = t('maxHelp');
+    $('btnResolveNight').textContent = t('resolveNight');
+    $('btnMaxSwitch').textContent = t('maxSwitch');
+    $('nightExplain').innerHTML = `<b>${lang==="ru"?"Ночь:":"Night:"}</b> ${t('nightExplain')}`;
+    $('guardWarn').textContent = t('guardRepeat');
+    $('s2Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
+    $('s2Next').textContent = lang==="ru" ? "Дальше → Утро" : "Next → Morning";
+
+    $('s3Title').textContent = t('s3Title');
+    $('s3Sub').textContent = t('s3Sub');
+    $('morningTextLbl').textContent = t('morningText');
+    $('rumorTitle').textContent = t('rumor');
+    $('btnNewRumor').textContent = t('newRumor');
+    $('barkTitle').textContent = t('bark');
+    $('barkInfo').textContent = t('barkInfo');
+    $('btnBarkSuccess').textContent = t('barkSuccess');
+    $('btnBarkFail').textContent = t('barkFail');
+    $('btnSetBarkTimer').textContent = t('setBark');
+    $('s3Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
+    $('s3Next').textContent = t('nextEvent');
+
+    $('s4Title').textContent = t('s4Title');
+    $('s4Sub').textContent = t('s4Sub');
+    $('btnDrawEvent').textContent = t('drawEvent');
+    $('btnRerollEvent').textContent = t('reroll');
+    $('eventResultLbl').textContent = t('eventResult');
+    $('selEventResult').options[0].text = lang==="ru" ? "Пока не решено" : "Not decided";
+    $('selEventResult').options[1].text = lang==="ru" ? "Успех" : "Success";
+    $('selEventResult').options[2].text = lang==="ru" ? "Провал" : "Fail";
+    $('btnApplyEvent').textContent = t('applyEvent');
+    $('eventHint').textContent = t('eventHint');
+    $('s4Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
+    $('s4Next').textContent = t('nextDiscuss');
+
+    $('s5Title').textContent = t('s5Title');
+    $('s5Sub').textContent = t('s5Sub');
+    $('mayorProtLbl').textContent = t('mayorProt');
+    $('btnSaveMayor').textContent = t('saveProt');
+    $('btnSetDiscussTimer').textContent = t('setDiscuss');
+    $('cindyLbl').textContent = t('cindy');
+    $('btnCindyKindness').textContent = t('kindness');
+    $('cindyHint').textContent = t('cindyHint');
+    $('mayorWarn').textContent = t('mayorRepeat');
+    $('s5Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
+    $('s5Next').textContent = t('nextVote');
+
+    $('s6Title').textContent = t('s6Title');
+    $('s6Sub').textContent = t('s6Sub');
+    $('tieLbl').textContent = t('tie');
+    $('selTie').options[0].text = t('tieNo');
+    $('selTie').options[1].text = t('tieYes');
+    $('selTie').options[2].text = t('tieDouble');
+    $('btnSetTieTimer').textContent = t('setTie');
+    $('banishedLbl').textContent = t('banished');
+    $('revealSideLbl').textContent = t('reveal');
+    $('selRevealSide').options[0].text = "Whoville (Good)";
+    $('selRevealSide').options[1].text = "Grinch Team (Bad)";
+    $('grinchBanishedLbl').textContent = t('grinchBanished');
+    $('btnApplyVote').textContent = t('applyVote');
+    $('voteNote').textContent = t('voteNote');
+    $('voteProtectedWarn').textContent = t('cannotBanishProtected');
+
+    $('spiritTitle').textContent = t('spiritTitle');
+    $('spiritMeta').textContent = t('spiritMeta');
+    $('spiritWhoLbl').textContent = t('spiritWho');
+    $('spiritEffectLbl').textContent = t('spiritEffect');
+    $('selSpiritEffect').options[0].text = "+1 Heart";
+    $('selSpiritEffect').options[1].text = "Cancel -1 Heart";
+    $('btnUseSpirit').textContent = t('useBonus');
+
+    $('s6Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
+    $('s6Next').textContent = t('nextEod');
+
+    $('s7Title').textContent = t('s7Title');
+    $('s7Sub').textContent = t('s7Sub');
+    $('heartsChecklistTitle').textContent = t('heartsChecklist');
+    $('lblCindyAlive').textContent = t('cindyAlive');
+    $('lblNoTie').textContent = t('noTie');
+    $('lblEventHeart').textContent = t('eventHeart');
+    $('lblWrongBanish').textContent = t('wrongBanish');
+    $('btnApplyEOD').textContent = t('applyEod');
+    $('btnNextDay').textContent = t('nextDay');
+    $('logHead').textContent = t('log');
+
+    $('winModalTitle').textContent = t('modalTitle');
+    $('btnCloseWin').textContent = t('close');
+    $('btnHardStop').textContent = t('stop');
+    $('btnNewGame2').textContent = t('newGame');
+
+    updateTimerUI();
+  }
+
+  // ---------- Rendering ----------
+  function setActiveStep(n){
+    state.step = clamp(n,1,7);
+    for(let i=1;i<=7;i++){
+      const el = $('step'+i);
+      if(!el) continue;
+      el.classList.toggle('active', i===state.step);
+    }
+    $('tagStep').textContent = `Step ${state.step}/7`;
+    saveState();
+  }
+
+  function updateKPIs(){
+    $('kPresents').textContent = String(state.presents);
+    $('kHearts').textContent = String(state.hearts);
+    $('kDay').textContent = String(state.day);
+
+    $('capTag').textContent = `Today +🎁: ${state.presentGainedToday ? "YES" : "NO"}`;
+    $('tagState').textContent = state.started ? t('stateRunning') : t('stateNotStarted');
+
+    $('tagMaxSide').textContent = `Max: ${state.maxSide}`;
+    $('tagMaxSide').classList.toggle('bad', state.maxSide==="Bad");
+    $('tagMaxSide').classList.toggle('good', state.maxSide==="Good");
+
+    $('tagBark').textContent = state.barkActive ? (state.barkResolved ? "Bark: done" : "Bark: pending") : "Bark: off";
+    $('tagBark').classList.toggle('warn', state.barkActive && !state.barkResolved);
+  }
+
+  function renderPlayersSelects(){
+    const aliveNames = state.players.filter(byAlive).map(p=>p.name);
+
+    function fillSelect(selId, list, includeNone=true){
+      const sel = $(selId);
+      if(!sel) return;
+      const prev = sel.value;
+      sel.innerHTML = "";
+      if(includeNone){
+        const opt = document.createElement('option');
+        opt.value = "";
+        opt.textContent = "—";
+        sel.appendChild(opt);
+      }
+      list.forEach(n=>{
+        const o = document.createElement('option');
+        o.value = n;
+        o.textContent = n;
+        sel.appendChild(o);
+      });
+      if(prev && [...sel.options].some(o=>o.value===prev)) sel.value = prev;
+    }
+
+    fillSelect('selGrinchTarget', aliveNames, false);
+    fillSelect('selGuardTarget', aliveNames, false);
+    fillSelect('selMaxTarget', aliveNames, false);
+
+    fillSelect('selMayorProt1', aliveNames, true);
+    fillSelect('selMayorProt2', aliveNames, true);
+
+    fillSelect('selBanished', aliveNames, true);
+
+    // spirit who: dead players (spirits). if none yet -> show placeholder list (alive) but still allow none.
+    const spirits = state.players.filter(p=>!p.alive).map(p=>p.name);
+    fillSelect('selSpiritWho', spirits.length ? spirits : aliveNames, true);
+  }
+
+  function renderRolesTable(){
+    const box = $('rolesBox');
+    box.style.display = (state.rolesMode === "known") ? "block" : "none";
+    $('grinchBanishedBox').style.display = (state.rolesMode === "unknown") ? "block" : "none";
+    $('grinchBanishedTip').textContent = (lang==="ru")
+      ? "Нужно только для условия «Grinch изгнан при 🎁≥6»."
+      : "Only needed for “Grinch banished while 🎁≥6” win condition.";
+
+    if(state.rolesMode !== "known") { $('rolesTable').innerHTML = ""; return; }
+
+    const roles = ROLE_SETS[state.playersCount].slice();
+    const html = [];
+    html.push(`<div class="two">`);
+    for(let i=0;i<state.players.length;i++){
+      const p = state.players[i];
+      const opts = [''].concat(roles).map(r=>{
+        const label = r ? roleLabel(r) : "—";
+        const sel = (p.role===r) ? "selected" : "";
+        return `<option value="${r}" ${sel}>${label}</option>`;
+      }).join('');
+      html.push(`
+        <div style="padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.14)">
+          <div style="font-weight:900">${p.name}</div>
+          <div style="margin-top:8px">
+            <select data-role-index="${i}">${opts}</select>
+          </div>
+          <div class="small" style="margin-top:8px">${p.alive ? "Alive" : "Banished"}</div>
+        </div>
+      `);
+    }
+    html.push(`</div>`);
+    $('rolesTable').innerHTML = html.join('');
+
+    // enforce unique roles (except Citizen)
+    const selects = $('rolesTable').querySelectorAll('select[data-role-index]');
+    selects.forEach(sel=>{
+      sel.addEventListener('change', (e)=>{
+        const idx = parseInt(e.target.getAttribute('data-role-index'),10);
+        const val = e.target.value || "";
+        setUndo();
+        state.players[idx].role = val;
+
+        // uniqueness: Grinch/Max/Cindy/Mayor/Guard must be unique
+        const unique = ["Grinch","Max","Cindy","Mayor","Guard"];
+        if(unique.includes(val)){
+          for(let j=0;j<state.players.length;j++){
+            if(j!==idx && state.players[j].role===val){
+              state.players[j].role="";
+            }
+          }
+        }
+        saveState();
+        render();
+      });
+    });
+  }
+
+  function renderMorningText(){
+    if(!state.started){ $('morningText').value=""; return; }
+    const stealLine = state._lastStealSuccess ? (lang==="ru" ? "кража была" : "a steal happened") : (lang==="ru" ? "кражи не было" : "no steal");
+    const base = (lang==="ru")
+      ? `Доброе утро, Whoville.\nСегодня ночью: ${stealLine}.\nPresents = ${state.presents}, Hearts = ${state.hearts}.`
+      : `Good morning, Whoville.\nLast night: ${stealLine}.\nPresents = ${state.presents}, Hearts = ${state.hearts}.`;
+
+    let extra = "";
+    if(state.rumorActive){
+      extra += "\n\n" + (lang==="ru"
+        ? `И ещё… ${state.rumorText}\n(Это НЕ доказательство.)`
+        : `And one more thing… ${state.rumorText}\n(This is NOT evidence.)`);
+    }
+    if(state.barkActive){
+      extra += "\n\n" + (lang==="ru"
+        ? `Bark Alarm: первые 30 секунд дня — тишина.`
+        : `Bark Alarm: first 30 seconds — silence.`);
+    }
+    $('morningText').value = base + extra;
+
+    $('rumorLine').textContent = state.rumorActive ? state.rumorText : "—";
+  }
+
+  function renderEvent(){
+    if(!state.currentEvent){
+      $('eventName').textContent = "—";
+      $('eventDesc').textContent = "—";
+      $('eventTag').textContent = "—";
+      $('eventAppliedNote').textContent = "—";
+      $('eventCapWarn').classList.remove('show');
+      return;
+    }
+    const e = state.currentEvent;
+    $('eventName').textContent = e.name[lang];
+    $('eventDesc').textContent = e.text[lang];
+    $('eventTag').textContent = e.type.toUpperCase();
+    $('eventAppliedNote').textContent = state.eventApplied
+      ? (lang==="ru" ? "Событие применено." : "Event applied.")
+      : (lang==="ru" ? "Событие не применено." : "Not applied yet.");
+  }
+
+  function autoFillChecklist(){
+    // Cindy alive:
+    // - known roles: auto only if Cindy role is set
+    // - unknown roles: do NOT override (host sets manually)
+    if(state.rolesMode === "known"){
+      const cindyIdx = findRoleIndex("Cindy");
+      if(cindyIdx !== null){
+        $('chkCindyAlive').checked = !!state.players[cindyIdx].alive;
+      }
+    }
+
+    // No tie heart only if tie === "no"
+    $('chkNoTie').checked = (state.tie === "no");
+
+    // Event heart succeeded
+    const e = state.currentEvent;
+    $('chkEventHeart').checked = !!(e && e.type==="heart" && state.eventApplied && state.eventResult==="success");
+
+    // Wrong banish (can be canceled by Spirit)
+    $('chkWrongBanish').checked = state.wrongBanishToday && !state.spiritCanceledWrong;
+  }
+
+  function render(){
+    applyI18n();
+    updateKPIs();
+
+    // lock UI if locked
+    const disabled = state.locked;
+    document.querySelectorAll("button, input, select, textarea").forEach(el=>{
+      if(el.closest('#winModal')) return;
+      if(el.id==="btnLang" || el.id==="btnExport" || el.id==="btnReset") return;
+      el.disabled = disabled;
+    });
+
+    // setup selections
+    $('playersCount').value = String(state.playersCount);
+    $('playersNames').value = state.players.map(p=>p.name).join(", ");
+    $('rolesMode').value = state.rolesMode;
+
+    // show steps
+    for(let i=1;i<=7;i++){
+      $('step'+i).classList.toggle('active', i===state.step);
+    }
+    $('tagStep').textContent = `Step ${state.step}/7`;
+
+    // step tags
+    $('s1Tag').textContent = state.started ? "OK" : "—";
+    $('s2Tag').textContent = state.started ? "Ready" : "—";
+    $('s3Tag').textContent = state.started ? "Ready" : "—";
+    $('s5Tag').textContent = state.mayorSaved ? "Saved" : "—";
+    $('s6Tag').textContent = state.banished ? "Applied" : "—";
+    $('s7Tag').textContent = "—";
+
+    // fill selects from players
+    renderPlayersSelects();
+
+    // night fields
+    $('selMaxEffect').value = state.night.maxEffect || "Rumor";
+    if(state.night.grinch) $('selGrinchTarget').value = state.night.grinch;
+    if(state.night.guard) $('selGuardTarget').value = state.night.guard;
+    if(state.night.maxTarget) $('selMaxTarget').value = state.night.maxTarget;
+
+    // guard rule warning
+    const guardPick = $('selGuardTarget').value;
+    $('guardWarn').classList.toggle('show', !!(state.lastGuard && guardPick && guardPick===state.lastGuard));
+
+    // morning
+    renderMorningText();
+    $('barkWarn').classList.toggle('show', false);
+
+    // event
+    $('selEventResult').value = state.eventResult || "none";
+    renderEvent();
+    $('eventCapWarn').classList.toggle('show', false);
+
+    // mayor
+    $('selMayorProt1').value = state.mayorProt[0] || "";
+    $('selMayorProt2').value = state.mayorProt[1] || "";
+    $('mayorWarn').classList.remove('show');
+    $('mayorSavedNote').textContent = state.mayorSaved
+      ? (lang==="ru"
+        ? `Сохранено: ${state.mayorProt.filter(Boolean).join(" & ") || "—"}`
+        : `Saved: ${state.mayorProt.filter(Boolean).join(" & ") || "—"}`)
+      : "—";
+
+    // Cindy
+    $('cindyNote').textContent = state.cindyKindnessUsed
+      ? (lang==="ru" ? "Kindness Round уже использован." : "Kindness Round already used.")
+      : (lang==="ru" ? "Можно применить 1 раз за игру." : "Can be used once per game.");
+
+    // vote
+    $('selTie').value = state.tie || "no";
+    $('selRevealSide').value = state.revealSide || "Good";
+    $('selBanished').value = state.banished || "";
+    $('voteProtectedWarn').classList.remove('show');
+
+    // Spirit note (per-spirit, once per game)
+    const spirits = state.players.filter(p=>!p.alive);
+    if(!spirits.length){
+      $('spiritNote').textContent = (lang==="ru")
+        ? "Пока нет изгнанных — бонус не доступен."
+        : "No banished players yet — bonus unavailable.";
+    }else{
+      $('spiritNote').textContent = (lang==="ru")
+        ? "Каждый дух может использовать бонус 1 раз за игру."
+        : "Each spirit can use the bonus once per game.";
+    }
+
+    $('logBox').textContent = state.log.length ? state.log.join("\n") : "—";
+
+    // roles
+    $('rolesMode').value = state.rolesMode;
+    $('rolesHint').textContent = t('rolesHint');
+    renderRolesTable();
+
+    // End of day auto-fill
+    autoFillChecklist();
+
+    // rules hint in step 7
+    $('rulesHint').innerHTML = (lang==="ru")
+      ? "<b>Памятка:</b> Bark (+1 ❤️) — утром, отдельно. В конце дня: Cindy alive (+1 ❤️), no tie (+1 ❤️), event-heart (+1 ❤️), wrong banish (-1 ❤️). Затем победа. Потом следующий день.<br><span class='small'>Gift Audit: если сегодня ошибочно изгнали Good — в конце дня ещё -1 🎁 (не отменяется духом).</span>"
+      : "<b>Reminder:</b> Bark (+1 ❤️) is in the morning, separate. End of day: Cindy alive (+1 ❤️), no tie (+1 ❤️), event-heart (+1 ❤️), wrong banish (-1 ❤️). Then win check. Then next day.<br><span class='small'>Gift Audit: if wrong banish today (Good) — extra -1 🎁 at EOD (not canceled by Spirit).</span>";
+
+    saveState();
+  }
+
+  // ---------- Core actions ----------
+  function initGame(){
+    if(state.locked) return;
+    setUndo();
+    const pc = parseInt($('playersCount').value,10);
+    const namesRaw = $('playersNames').value.trim();
+    const names = namesRaw
+      ? namesRaw.split(",").map(s=>s.trim()).filter(Boolean)
+      : [];
+    const needed = pc;
+    const list = [];
+    for(let i=0;i<needed;i++){
+      const name = names[i] || (lang==="ru" ? `Игрок ${i+1}` : `Player ${i+1}`);
+      list.push({name, role:"", alive:true, spiritUsed:false});
+    }
+    state.playersCount = pc;
+    state.rolesMode = $('rolesMode').value || "known";
+
+    state.players = list;
+    state.startPresents = (pc===6) ? 10 : 12;
+    state.presents = state.startPresents;
+    state.hearts = 0;
+    state.day = 1;
+    state.presentGainedToday = false;
+
+    state.lastGuard = null;
+    state.night = { grinch:null, guard:null, maxTarget:null, maxEffect:"Rumor" };
+    state.maxSide = "Bad";
+    state.maxSwitched = false;
+    state.barkActive = false;
+    state.barkResolved = false;
+    state.rumorActive = false;
+    state.rumorText = "";
+    state._lastStealSuccess = false;
+
+    state.currentEvent = null;
+    state.lastEventType = null;
+    state.eventApplied = false;
+    state.eventResult = "none";
+
+    state.mayorProt = [null,null];
+    state.mayorLastProt = [null,null];
+    state.mayorSaved = false;
+
+    state.tie = "no";
+    state.banished = null;
+    state.revealSide = "Good";
+    state.wrongBanishToday = false;
+    state.grinchBanishedToday = false;
+    state.spiritCanceledWrong = false;
+
+    state.cindyKindnessUsed = false;
+
+    state.log = [];
+    addLog(lang==="ru" ? `Старт партии: ${pc} игроков. Presents=${state.startPresents}, Hearts=0.` : `Game start: ${pc} players. Presents=${state.startPresents}, Hearts=0.`);
+    state.started = true;
+    state.step = 1;
+    timerSet("07:00", "Discussion");
+
+    render();
+  }
+
+  function autoAssignRoles(){
+    if(!state.started){ $('setupWarn').textContent = t('needGame'); $('setupWarn').classList.add('show'); return; }
+    if(state.rolesMode !== "known"){
+      $('setupWarn').textContent = (lang==="ru" ? "Режим ролей = Unknown. Переключи на Known, чтобы авто-раздать." : "Roles mode is Unknown. Switch to Known to auto-assign.");
+      $('setupWarn').classList.add('show');
+      return;
+    }
+    $('setupWarn').classList.remove('show');
+    setUndo();
+    const roles = ROLE_SETS[state.playersCount].slice();
+    for(let i=roles.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [roles[i], roles[j]] = [roles[j], roles[i]];
+    }
+    state.players.forEach((p,i)=> p.role = roles[i] || "");
+    addLog(lang==="ru" ? "Авто-раздача ролей выполнена (только ведущему)." : "Auto roles assigned (host only).");
+    render();
+  }
+
+  function clearRoles(){
+    if(!state.started) return;
+    setUndo();
+    state.players.forEach(p=>p.role="");
+    addLog(lang==="ru" ? "Роли очищены." : "Roles cleared.");
+    render();
+  }
+
+  function resolveNight(){
+    if(!state.started){ toast(t('needGame')); return; }
+    const g = $('selGrinchTarget').value;
+    const guard = $('selGuardTarget').value;
+    const mt = $('selMaxTarget').value;
+    const me = $('selMaxEffect').value;
+
+    if(!g || !guard || !mt || !me){ toast(t('fillNight')); return; }
+
+    if(state.lastGuard && guard === state.lastGuard){
+      $('guardWarn').classList.add('show');
+      toast(t('guardRepeat'));
+      return;
+    }
+    $('guardWarn').classList.remove('show');
+
+    setUndo();
+    state.night.grinch = g;
+    state.night.guard = guard;
+    state.night.maxTarget = mt;
+    state.night.maxEffect = me;
+
+    const blocked = (guard === g) && !(me === "ScentTrail" && mt === g);
+    const stealSuccess = !blocked;
+
+    state._lastStealSuccess = stealSuccess;
+    if(stealSuccess){
+      state.presents = clamp(state.presents - 1, 0, state.startPresents);
+      addLog((lang==="ru")
+        ? `Ночь: кража УСПЕШНА. 🎁 -1 (Grinch→${g}, Guard→${guard}, Max:${me}→${mt}).`
+        : `Night: steal SUCCESS. 🎁 -1 (Grinch→${g}, Guard→${guard}, Max:${me}→${mt}).`);
+    }else{
+      addLog((lang==="ru")
+        ? `Ночь: кражи НЕТ (Guard спас). (Grinch→${g}, Guard→${guard}, Max:${me}→${mt}).`
+        : `Night: NO steal (Guard blocked). (Grinch→${g}, Guard→${guard}, Max:${me}→${mt}).`);
+    }
+
+    state.rumorActive = (me === "Rumor");
+    state.barkActive  = (me === "BarkAlarm");
+    state.barkResolved = false;
+
+    if(state.rumorActive){
+      state.rumorText = genRumor(mt);
+      addLog(lang==="ru" ? `Rumor активирован про ${mt}.` : `Rumor activated about ${mt}.`);
+    }else{
+      state.rumorText = "";
+    }
+    if(state.barkActive){
+      addLog(lang==="ru" ? `Bark Alarm активирован (30 сек тишины утром).` : `Bark Alarm activated (30s silence in morning).`);
+    }
+
+    state.lastGuard = guard;
+
+    setActiveStep(3);
+    render();
+    checkWinAuto(); // if presents hit 0
+  }
+
+  function genRumor(targetName){
+    const r = RUMORS[Math.floor(Math.random()*RUMORS.length)];
+    return r[lang].replace("{X}", targetName);
+  }
+
+  function newRumor(){
+    if(!state.rumorActive){
+      toast(lang==="ru" ? "Rumor не активен" : "Rumor not active");
+      return;
+    }
+    setUndo();
+    state.rumorText = genRumor(state.night.maxTarget || "—");
+    addLog(lang==="ru" ? "Rumor обновлён." : "Rumor refreshed.");
+    render();
+  }
+
+  function barkSuccess(){
+    if(!state.barkActive){ toast(lang==="ru"?"Bark не активен":"Bark not active"); return; }
+    if(state.barkResolved){ $('barkWarn').textContent = lang==="ru"?"Bark уже решён":"Bark already resolved"; $('barkWarn').classList.add('show'); return; }
+    setUndo();
+    state.barkResolved = true;
+    state.hearts = clamp(state.hearts + 1, 0, 8);
+    addLog(lang==="ru" ? "Bark: успех. ❤️ +1 (утро)." : "Bark: success. ❤️ +1 (morning).");
+    render();
+    checkWinAuto();
+  }
+  function barkFail(){
+    if(!state.barkActive){ toast(lang==="ru"?"Bark не активен":"Bark not active"); return; }
+    if(state.barkResolved){ $('barkWarn').textContent = lang==="ru"?"Bark уже решён":"Bark already resolved"; $('barkWarn').classList.add('show'); return; }
+    setUndo();
+    state.barkResolved = true;
+    addLog(lang==="ru" ? "Bark: провал. ❤️ +0." : "Bark: fail. ❤️ +0.");
+    render();
+  }
+
+  function maxSwitch(){
+    if(!state.started){ toast(t('needGame')); return; }
+    if(state.day < 4){ toast(t('maxTooEarly')); return; } // after Day 3
+    if(state.maxSwitched){ toast(t('maxAlready')); return; }
+    setUndo();
+    state.maxSwitched = true;
+    state.maxSide = "Good";
+    addLog(lang==="ru" ? "Max объявил переход на сторону Whoville." : "Max switched to Whoville.");
+    render();
+  }
+
+  function pickEventAvoidingPresentStreak(forceReroll=false){
+    const avoidPresent = (state.lastEventType === "present");
+    const maxAttempts = 60;
+
+    for(let i=0;i<maxAttempts;i++){
+      const e = EVENTS[Math.floor(Math.random()*EVENTS.length)];
+      if(avoidPresent && e.type === "present") continue;
+      return {event:e, avoided: avoidPresent && e.type !== "present"};
+    }
+
+    // Fallback: if too unlucky, just return any non-present if exists
+    if(avoidPresent){
+      const nonPresents = EVENTS.filter(x=>x.type !== "present");
+      if(nonPresents.length){
+        return {event: nonPresents[Math.floor(Math.random()*nonPresents.length)], avoided:true};
+      }
+    }
+    return {event: EVENTS[Math.floor(Math.random()*EVENTS.length)], avoided:false};
+  }
+
+  function drawEvent(reroll=false){
+    if(!state.started){ toast(t('needGame')); return; }
+    setUndo();
+
+    const {event:e, avoided} = pickEventAvoidingPresentStreak(!!reroll);
+
+    state.currentEvent = e;
+    state.eventApplied = false;
+    state.eventResult = "none";
+
+    addLog((lang==="ru")
+      ? `Day Event вытянут: ${e.name[lang]}${avoided ? " (🎁-стрик предотвращён)" : ""}`
+      : `Day Event drawn: ${e.name[lang]}${avoided ? " (prevented 🎁 streak)" : ""}`);
+
+    $('eventCapWarn').classList.remove('show');
+    render();
+  }
+
+  function rerollEvent(){
+    drawEvent(true);
+  }
+
+  function applyEvent(){
+    if(!state.currentEvent){ toast(lang==="ru" ? "Сначала вытянуть событие" : "Draw event first"); return; }
+    if(state.eventApplied){ toast(lang==="ru" ? "Уже применено" : "Already applied"); return; }
+    const r = $('selEventResult').value;
+    if(r === "none"){ toast(lang==="ru" ? "Выбери успех/провал" : "Choose success/fail"); return; }
+
+    setUndo();
+    state.eventResult = r;
+    const e = state.currentEvent;
+
+    let note = "";
+    if(r === "success"){
+      if(e.onSuccess.heart){
+        state.hearts = clamp(state.hearts + e.onSuccess.heart, 0, 8);
+        note += `❤️ +${e.onSuccess.heart}. `;
+      }
+      if(e.onSuccess.present){
+        if(!state.presentGainedToday && state.presents < state.startPresents){
+          state.presents = clamp(state.presents + 1, 0, state.startPresents);
+          state.presentGainedToday = true;
+          note += (lang==="ru") ? `🎁 +1 (лимит потрачен). ` : `🎁 +1 (cap used). `;
+        }else{
+          $('eventCapWarn').classList.add('show');
+          note += (lang==="ru") ? `🎁 не добавлен (лимит/потолок). ` : `🎁 not added (cap/ceiling). `;
+        }
+      }
+      if(e.id === 1){
+        note += (lang==="ru") ? `Поставь таймер 05:00 на обсуждение.` : `Set discussion timer to 05:00.`;
+      }
+    }else{
+      if(e.onFail.heart){
+        state.hearts = clamp(state.hearts + e.onFail.heart, 0, 8);
+        note += `❤️ ${e.onFail.heart}. `;
+      }
+      if(e.onFail.present){
+        state.presents = clamp(state.presents + e.onFail.present, 0, state.startPresents);
+        note += `🎁 ${e.onFail.present}. `;
+      }
+    }
+
+    state.eventApplied = true;
+    state.lastEventType = e.type;
+
+    addLog((lang==="ru")
+      ? `Day Event: ${e.name[lang]} → ${r==="success"?"успех":"провал"}. ${note}`.trim()
+      : `Day Event: ${e.name[lang]} → ${r}. ${note}`.trim());
+
+    $('eventAppliedNote').textContent = note || "—";
+    render();
+    checkWinAuto();
+  }
+
+  function saveMayor(){
+    if(!state.started){ toast(t('needGame')); return; }
+    setUndo();
+    const a = $('selMayorProt1').value || null;
+    const b = $('selMayorProt2').value || null;
+
+    const aliveCount = state.players.filter(byAlive).length;
+    const needTwo = (aliveCount >= 2);
+
+    if(needTwo && (!a || !b)){
+      $('mayorWarn').textContent = t('mayorNeedTwo');
+      $('mayorWarn').classList.add('show');
+      return;
+    }
+
+    if(a && b && a === b){
+      $('mayorWarn').textContent = (lang==="ru") ? "Нельзя защищать одного и того же дважды." : "Cannot protect same player twice.";
+      $('mayorWarn').classList.add('show');
+      return;
+    }
+
+    const yesterday = new Set((state.mayorLastProt||[]).filter(Boolean));
+    const today = new Set([a,b].filter(Boolean));
+    const repeated = [...today].some(x => yesterday.has(x));
+    if(repeated){
+      $('mayorWarn').textContent = t('mayorRepeat');
+      $('mayorWarn').classList.add('show');
+      return;
+    }
+
+    $('mayorWarn').classList.remove('show');
+    state.mayorProt = [a,b];
+    state.mayorSaved = true;
+
+    addLog((lang==="ru")
+      ? `Mayor protection: ${[a,b].filter(Boolean).join(" & ") || "—"}`
+      : `Mayor protection: ${[a,b].filter(Boolean).join(" & ") || "—"}`);
+
+    render();
+  }
+
+  function cindyKindness(){
+    if(!state.started){ toast(t('needGame')); return; }
+    if(state.cindyKindnessUsed){ toast(t('kindnessUsed')); return; }
+    setUndo();
+
+    if(!state.presentGainedToday && state.presents < state.startPresents){
+      state.presents = clamp(state.presents + 1, 0, state.startPresents);
+      state.presentGainedToday = true;
+      addLog(lang==="ru" ? "Cindy Kindness: 🎁 +1 (лимит потрачен)." : "Cindy Kindness: 🎁 +1 (cap used).");
+      $('cindyNote').textContent = lang==="ru" ? "Дал 🎁 +1." : "Gave 🎁 +1.";
+    }else{
+      state.hearts = clamp(state.hearts + 1, 0, 8);
+      addLog(lang==="ru" ? "Cindy Kindness: лимит 🎁 занят → ❤️ +1 вместо 🎁." : "Cindy Kindness: 🎁 cap used → ❤️ +1 instead.");
+      $('cindyNote').textContent = lang==="ru" ? "Дал ❤️ +1 вместо 🎁." : "Gave ❤️ +1 instead of 🎁.";
+    }
+
+    state.cindyKindnessUsed = true;
+    render();
+    checkWinAuto();
+  }
+
+  function applyVote(){
+    if(!state.started){ toast(t('needGame')); return; }
+
+    const tie = $('selTie').value;
+    const banished = $('selBanished').value || null;
+    const reveal = $('selRevealSide').value;
+
+    if(tie === "double"){
+      setUndo();
+      state.tie = "double";
+      state.banished = null;
+      state.revealSide = reveal;
+      state.wrongBanishToday = false;
+      state.grinchBanishedToday = false;
+      state.spiritCanceledWrong = false;
+      addLog(lang==="ru" ? "Голосование: ничья дважды → никого не изгоняем." : "Vote: tie twice → no banishment.");
+      render();
+      return;
+    }
+
+    if(!banished){ toast(lang==="ru" ? "Выбери изгнанного" : "Pick banished"); return; }
+
+    const prot = new Set(state.mayorProt.filter(Boolean));
+    if(prot.has(banished)){
+      $('voteProtectedWarn').classList.add('show');
+      toast(t('cannotBanishProtected'));
+      return;
+    }
+    $('voteProtectedWarn').classList.remove('show');
+
+    setUndo();
+    state.tie = tie;
+    state.banished = banished;
+    state.revealSide = reveal;
+
+    const idx = state.players.findIndex(p=>p.name===banished);
+    if(idx>=0){
+      state.players[idx].alive = false;
+    }
+
+    state.wrongBanishToday = (reveal === "Good");
+    state.spiritCanceledWrong = false;
+
+    if(state.rolesMode === "known"){
+      const grinchIdx = findRoleIndex("Grinch");
+      state.grinchBanishedToday = (grinchIdx!==null && !state.players[grinchIdx].alive);
+    }else{
+      state.grinchBanishedToday = !!$('chkGrinchBanished').checked;
+    }
+
+    addLog((lang==="ru")
+      ? `Голосование: изгнан ${banished}. Открытая сторона: ${reveal}. ${tie==="yes" ? "(была ничья → переголосование)" : ""}`
+      : `Vote: banished ${banished}. Revealed: ${reveal}. ${tie==="yes" ? "(tie → revote happened)" : ""}`);
+
+    render();
+    checkWinAuto();
+  }
+
+  function useSpiritBonus(){
+    if(!state.started){ toast(t('needGame')); return; }
+
+    const who = $('selSpiritWho').value || null;
+    const eff = $('selSpiritEffect').value;
+
+    if(!who){
+      toast(lang==="ru" ? "Выбери духа" : "Pick a spirit");
+      return;
+    }
+
+    const p = state.players.find(x=>x.name===who);
+    if(!p){ toast(lang==="ru" ? "Игрок не найден" : "Player not found"); return; }
+    if(p.alive){
+      toast(lang==="ru" ? "Этот игрок ещё жив" : "This player is still alive");
+      return;
+    }
+    if(p.spiritUsed){
+      toast(t('spiritUsed'));
+      return;
+    }
+
+    if(eff === "cancelWrong" && !state.wrongBanishToday){
+      toast(t('spiritNoWrong'));
+      return;
+    }
+
+    setUndo();
+    p.spiritUsed = true;
+
+    if(eff === "addHeart"){
+      state.hearts = clamp(state.hearts + 1, 0, 8);
+      addLog(lang==="ru" ? `Holiday Spirit (${who}): ❤️ +1.` : `Holiday Spirit (${who}): ❤️ +1.`);
+      $('spiritNote').textContent = lang==="ru" ? "Дал ❤️ +1." : "Gave ❤️ +1.";
+    }else{
+      state.spiritCanceledWrong = true;
+      addLog(lang==="ru" ? `Holiday Spirit (${who}): отменил штраф -1 ❤️ за ошибку.` : `Holiday Spirit (${who}): canceled -1 ❤️ penalty for wrong banishment.`);
+      $('spiritNote').textContent = lang==="ru" ? "Отменил -1 ❤️." : "Canceled -1 ❤️.";
+    }
+
+    render();
+    checkWinAuto();
+  }
+
+  function applyEOD(){
+    if(!state.started){ toast(t('needGame')); return; }
+    setUndo();
+
+    const cindy = $('chkCindyAlive').checked ? 1 : 0;
+    const noTie = $('chkNoTie').checked ? 1 : 0;
+    const eventH = $('chkEventHeart').checked ? 1 : 0;
+    const wrong = $('chkWrongBanish').checked ? -1 : 0;
+
+    const delta = cindy + noTie + eventH + wrong;
+    state.hearts = clamp(state.hearts + delta, 0, 8);
+
+    // Gift Audit mechanic:
+    // If current event is 20 and wrong banish happened -> extra -1 🎁 at end of day.
+    // IMPORTANT: Spirit cancel affects ONLY ❤️ penalty, NOT this 🎁 penalty.
+    let giftAuditApplied = false;
+    if(state.currentEvent && state.currentEvent.id === 20 && state.wrongBanishToday){
+      const before = state.presents;
+      state.presents = clamp(state.presents - 1, 0, state.startPresents);
+      giftAuditApplied = (state.presents !== before);
+      addLog(lang==="ru"
+        ? `Gift Audit: ошибка (Good) → доп. 🎁 -1 в конце дня.`
+        : `Gift Audit: wrong banish (Good) → extra 🎁 -1 at EOD.`);
+    }
+
+    addLog((lang==="ru")
+      ? `Конец дня: Hearts ${delta>=0?"+":""}${delta}. Итог: 🎁=${state.presents}, ❤️=${state.hearts}.`
+      : `End of day: Hearts ${delta>=0?"+":""}${delta}. Totals: 🎁=${state.presents}, ❤️=${state.hearts}.`);
+
+    $('eodPreview').textContent = (lang==="ru")
+      ? `Hearts change: ${delta>=0?"+":""}${delta} → Hearts=${state.hearts}${giftAuditApplied ? " | Gift Audit: 🎁 -1" : ""}`
+      : `Hearts change: ${delta>=0?"+":""}${delta} → Hearts=${state.hearts}${giftAuditApplied ? " | Gift Audit: 🎁 -1" : ""}`;
+
+    render();
+    checkWinAuto(true);
+  }
+
+  function nextDay(){
+    if(!state.started){ toast(t('needGame')); return; }
+    if(state.locked) return;
+
+    setUndo();
+
+    state.day += 1;
+    state.presentGainedToday = false;
+
+    state.tie = "no";
+    state.banished = null;
+    state.revealSide = "Good";
+    state.wrongBanishToday = false;
+    state.grinchBanishedToday = false;
+    state.spiritCanceledWrong = false;
+
+    state.mayorLastProt = state.mayorProt.slice();
+    state.mayorProt = [null,null];
+    state.mayorSaved = false;
+
+    state.currentEvent = null;
+    state.eventApplied = false;
+    state.eventResult = "none";
+
+    state.barkActive = false;
+    state.barkResolved = false;
+    state.rumorActive = false;
+    state.rumorText = "";
+    state._lastStealSuccess = false;
+
+    addLog(lang==="ru" ? `Наступает Day ${state.day}.` : `Day ${state.day} begins.`);
+    setActiveStep(2);
+    render();
+  }
+
+  // ---------- Win logic ----------
+  function checkWinAuto(isEOD=false){
+    if(!state.started) return null;
+
+    if(state.hearts >= 8){
+      return endGame("Whoville wins", lang==="ru" ? "Hearts достигли 8." : "Hearts reached 8.");
+    }
+    if(state.presents <= 0){
+      return endGame("Grinch wins", lang==="ru" ? "Presents упали до 0." : "Presents dropped to 0.");
+    }
+
+    const grinchBanished = (() => {
+      if(state.rolesMode === "known"){
+        const idx = findRoleIndex("Grinch");
+        return (idx!==null) ? !state.players[idx].alive : false;
+      }
+      return !!state.grinchBanishedToday;
+    })();
+
+    if(grinchBanished && state.presents >= 6){
+      return endGame("Whoville wins", lang==="ru"
+        ? "Grinch изгнан, а Presents ≥ 6."
+        : "Grinch was banished and Presents ≥ 6.");
+    }
+
+    if(isEOD && state.day >= 6 && state.presents <= 3){
+      return endGame("Grinch wins", lang==="ru"
+        ? "Конец Day 6 и Presents ≤ 3."
+        : "End of Day 6 and Presents ≤ 3.");
+    }
+
+    return null;
+  }
+
+  function endGame(title, reason){
+    state.locked = true;
+    $('winTitle').textContent = title;
+    $('winReason').textContent = reason + ` (🎁=${state.presents}, ❤️=${state.hearts}, Day=${state.day})`;
+    $('winModal').classList.add('show');
+    addLog(`${title}. ${reason}`);
+    saveState();
+    render();
+  }
+
+  // ---------- Export log ----------
+  function exportLog(){
+    const content = state.log.slice().reverse().join("\n");
+    const blob = new Blob([content], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `grinch-mafia-log-day${state.day}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------- Reset ----------
+  function resetAll(){
+    timerStop();
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_KEY + ":lang");
+    state = DEFAULT_STATE();
+    lang = getLang();
+    timerSet("07:00", "Discussion");
+    render();
+  }
+
+  // ---------- Confirm on refresh/close (accidental) ----------
+  function hasUnsavedGame(){
+    return !!(state && state.started && !state.locked);
+  }
+  window.addEventListener("beforeunload", (e) => {
+    if(!hasUnsavedGame()) return;
+    e.preventDefault();
+    e.returnValue = "";
+  });
+
+  // ---------- Events wiring ----------
+  $('btnLang').addEventListener('click', ()=>{
+    lang = (lang==="ru") ? "en" : "ru";
+    localStorage.setItem(LS_KEY + ":lang", lang);
+    render();
+  });
+
+  $('btnExport').addEventListener('click', exportLog);
+
+  $('btnReset').addEventListener('click', ()=>{
+    const msg = (lang==="ru")
+      ? "Сбросить игру? Всё текущее состояние и лог будут удалены."
+      : "Reset the game? All current state and log will be deleted.";
+    if(confirm(msg)) resetAll();
+  });
+
+  $('btnNewGame2').addEventListener('click', ()=>{
+    const msg = (lang==="ru")
+      ? "Начать новую игру? Текущая партия будет удалена."
+      : "Start a new game? Current game will be deleted.";
+    if(confirm(msg)) resetAll();
+  });
+
+  $('btnUndo').addEventListener('click', doUndo);
+
+  $('btnInit').addEventListener('click', ()=>{
+    $('setupWarn').classList.remove('show');
+    initGame();
+  });
+  $('btnAutoRoles').addEventListener('click', autoAssignRoles);
+  $('btnClearRoles').addEventListener('click', clearRoles);
+
+  $('rolesMode').addEventListener('change', ()=>{
+    setUndo();
+    state.rolesMode = $('rolesMode').value;
+    render();
+  });
+
+  // Step nav
+  $('s1Next').addEventListener('click', ()=> setActiveStep(2));
+  $('s2Prev').addEventListener('click', ()=> setActiveStep(1));
+  $('s2Next').addEventListener('click', ()=> setActiveStep(3));
+  $('s3Prev').addEventListener('click', ()=> setActiveStep(2));
+  $('s3Next').addEventListener('click', ()=> setActiveStep(4));
+  $('s4Prev').addEventListener('click', ()=> setActiveStep(3));
+  $('s4Next').addEventListener('click', ()=> setActiveStep(5));
+  $('s5Prev').addEventListener('click', ()=> setActiveStep(4));
+  $('s5Next').addEventListener('click', ()=> setActiveStep(6));
+  $('s6Prev').addEventListener('click', ()=> setActiveStep(5));
+  $('s6Next').addEventListener('click', ()=> setActiveStep(7));
+  $('s7Prev').addEventListener('click', ()=> setActiveStep(6));
+
+  $('btnResolveNight').addEventListener('click', resolveNight);
+  $('btnMaxSwitch').addEventListener('click', maxSwitch);
+
+  $('btnNewRumor').addEventListener('click', newRumor);
+  $('btnBarkSuccess').addEventListener('click', barkSuccess);
+  $('btnBarkFail').addEventListener('click', barkFail);
+  $('btnSetBarkTimer').addEventListener('click', ()=> timerSet("00:30", "Bark"));
+
+  $('btnDrawEvent').addEventListener('click', ()=> drawEvent(false));
+  $('btnRerollEvent').addEventListener('click', rerollEvent);
+  $('btnApplyEvent').addEventListener('click', applyEvent);
+
+  $('btnSaveMayor').addEventListener('click', saveMayor);
+  $('btnSetDiscussTimer').addEventListener('click', ()=> timerSet("07:00", "Discussion"));
+
+  $('btnCindyKindness').addEventListener('click', cindyKindness);
+
+  $('btnSetTieTimer').addEventListener('click', ()=> timerSet("01:00", "Tie"));
+  $('btnApplyVote').addEventListener('click', applyVote);
+
+  $('btnUseSpirit').addEventListener('click', useSpiritBonus);
+
+  $('btnApplyEOD').addEventListener('click', applyEOD);
+  $('btnNextDay').addEventListener('click', nextDay);
+
+  $('btnWinCheck').addEventListener('click', ()=> {
+    const res = checkWinAuto(false);
+    if(!res && !state.locked) toast(t('winNone'));
+  });
+
+  // Timer buttons
+  $('tStart').addEventListener('click', ()=> timerStart());
+  $('tPause').addEventListener('click', ()=> timerStop());
+  $('tReset').addEventListener('click', ()=> timerReset());
+  $('timerInput').addEventListener('change', ()=>{
+    const v = $('timerInput').value;
+    const sec = parseMMSS(v);
+    if(sec===null) {
+      toast("mm:ss");
+      $('timerInput').value = mmss(timer.total);
+      return;
+    }
+    timerSet(v, timer.mode);
+  });
+
+  // Presets
+  $('presetDiscuss').addEventListener('click', ()=> timerSet("07:00", "Discussion"));
+  $('presetBark').addEventListener('click', ()=> timerSet("00:30", "Bark"));
+  $('presetTie').addEventListener('click', ()=> timerSet("01:00", "Tie"));
+  $('preset60').addEventListener('click', ()=> timerSet("01:00", "1 min"));
+  $('preset2m').addEventListener('click', ()=> timerSet("02:00", "2 min"));
+  $('preset5m').addEventListener('click', ()=> timerSet("05:00", "5 min"));
+
+  // Win modal
+  $('btnCloseWin').addEventListener('click', ()=> $('winModal').classList.remove('show'));
+  $('btnHardStop').addEventListener('click', ()=>{
+    setUndo();
+    state.locked = true;
+    addLog(lang==="ru" ? "Игра остановлена (UI заблокирован)." : "Game stopped (UI locked).");
+    saveState();
+    render();
+    $('winModal').classList.remove('show');
+  });
+
+  // Initial render + restore
+  lang = getLang();
+  timerSet("07:00", "Discussion");
+  render();
+})();
+</script>
+</body>
+</html>
