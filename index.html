@@ -413,7 +413,7 @@
         <div class="stepHead">
           <div>
             <div class="name" id="s2Title">2) Night</div>
-            <div class="sub" id="s2Sub">Grinch → Max → Guard (steal affects 🎁 only)</div>
+            <div class="sub" id="s2Sub">Grinch → Max → Guard → Mayor/Cindy (host-only, hidden)</div>
           </div>
           <span class="tag warn" id="s2Tag">—</span>
         </div>
@@ -426,7 +426,11 @@
             <div>
               <label id="guardTargetLbl">Guard: protect (no same two nights)</label>
               <select id="selGuardTarget"></select>
+              <div class="row" style="margin-top:6px">
+                <span class="tag warn" id="tagHeroGuard">HERO • Guard</span>
+              </div>
               <div class="warnText" id="guardWarn">Guard repeated last night — not allowed.</div>
+              <div class="small" id="guardOffNote" style="margin-top:6px"></div>
             </div>
           </div>
 
@@ -436,15 +440,55 @@
             <div>
               <label id="maxTargetLbl">Max: target</label>
               <select id="selMaxTarget"></select>
+              <div class="row" style="margin-top:6px">
+                <span class="tag warn" id="tagHeroMax">HERO • Max</span>
+              </div>
+              <div class="small" id="maxOffNote" style="margin-top:6px"></div>
             </div>
             <div>
               <label id="maxEffectLbl">Max: effect</label>
               <select id="selMaxEffect">
+                <option value="None">None</option>
                 <option value="ScentTrail">Scent Trail</option>
                 <option value="Rumor">Rumor</option>
                 <option value="BarkAlarm">Bark Alarm</option>
               </select>
               <div class="small" id="maxEffectHelp" style="margin-top:6px"></div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- MOVED HERE: MAYOR + CINDY (host-only, to avoid day reveal) -->
+          <div class="two">
+            <div>
+              <label id="mayorProtLbl">Mayor: protected from banishment (2)</label>
+              <div class="row" style="margin:6px 0 8px">
+                <span class="tag warn" id="tagHeroMayor">HERO • Mayor</span>
+              </div>
+              <div class="row">
+                <div style="flex:1;min-width:160px">
+                  <select id="selMayorProt1"></select>
+                </div>
+                <div style="flex:1;min-width:160px">
+                  <select id="selMayorProt2"></select>
+                </div>
+              </div>
+              <div class="warnText" id="mayorWarn">Mayor repeated protection from yesterday — not allowed.</div>
+              <div class="btns" style="margin-top:10px">
+                <button class="secondary" id="btnSaveMayor">Save protection</button>
+              </div>
+              <div class="small" id="mayorSavedNote" style="margin-top:10px">—</div>
+              <div class="small" id="mayorOffNote" style="margin-top:6px"></div>
+            </div>
+            <div>
+              <label id="cindyLbl">Cindy action</label>
+              <div class="row" style="margin:6px 0 8px">
+                <span class="tag warn" id="tagHeroCindy">HERO • Cindy</span>
+              </div>
+              <button class="secondary" id="btnCindyKindness">Cindy: Kindness Round (1×)</button>
+              <div class="small" id="cindyNote" style="margin-top:10px">—</div>
+              <div class="hint" id="cindyHint"></div>
             </div>
           </div>
 
@@ -533,6 +577,10 @@
             <div class="bd">
               <div class="small" id="eventDesc">—</div>
 
+              <!-- NEW: Example under main task -->
+              <div class="divider"></div>
+              <div class="small" id="eventExample">—</div>
+
               <div class="divider"></div>
 
               <div class="two">
@@ -564,41 +612,21 @@
 
       <div class="divider"></div>
 
-      <!-- STEP 5: DISCUSSION + MAYOR -->
+      <!-- STEP 5: DISCUSSION (Mayor/Cindy moved to Night) -->
       <div class="step" id="step5">
         <div class="stepHead">
           <div>
             <div class="name" id="s5Title">5) Discussion</div>
-            <div class="sub" id="s5Sub">Mayor protects 2 BEFORE discussion; discussion 07:00</div>
+            <div class="sub" id="s5Sub">Discussion 07:00 (Mayor/Cindy chosen at Night)</div>
           </div>
           <span class="tag" id="s5Tag">—</span>
         </div>
         <div class="body">
-          <div class="two">
-            <div>
-              <label id="mayorProtLbl">Mayor: protected from banishment (2)</label>
-              <div class="row">
-                <div style="flex:1;min-width:160px">
-                  <select id="selMayorProt1"></select>
-                </div>
-                <div style="flex:1;min-width:160px">
-                  <select id="selMayorProt2"></select>
-                </div>
-              </div>
-              <div class="warnText" id="mayorWarn">Mayor repeated protection from yesterday — not allowed.</div>
-              <div class="btns" style="margin-top:10px">
-                <button class="secondary" id="btnSaveMayor">Save protection</button>
-                <button class="secondary" id="btnSetDiscussTimer">Set 07:00</button>
-              </div>
-              <div class="small" id="mayorSavedNote" style="margin-top:10px">—</div>
-            </div>
-            <div>
-              <label id="cindyLbl">Cindy action</label>
-              <button class="secondary" id="btnCindyKindness">Cindy: Kindness Round (1×)</button>
-              <div class="small" id="cindyNote" style="margin-top:10px">—</div>
-              <div class="hint" id="cindyHint"></div>
-            </div>
+          <div class="btns">
+            <button class="secondary" id="btnSetDiscussTimer">Set 07:00</button>
+            <button class="secondary" id="btnSetDiscussTimer5">Set 05:00</button>
           </div>
+          <div class="hint" id="discussionHint"></div>
         </div>
         <div class="stepNav">
           <button class="secondary" id="s5Prev">← Back</button>
@@ -652,6 +680,17 @@
                   <span id="grinchBanishedLbl">Grinch was banished (manual)</span>
                 </label>
                 <div class="small" id="grinchBanishedTip"></div>
+              </div>
+
+              <!-- NEW: Hero disable options (Unknown roles mode) -->
+              <div class="hint" id="heroesOffBox" style="display:none;margin-top:10px">
+                <b>Host only:</b> если роли не введены — отметь, какого героя изгнали, чтобы убрать его из ночных действий.
+                <div class="row" style="margin-top:10px">
+                  <label class="tag"><input type="checkbox" id="chkOffMayor"> Mayor out</label>
+                  <label class="tag"><input type="checkbox" id="chkOffGuard"> Guard out</label>
+                  <label class="tag"><input type="checkbox" id="chkOffCindy"> Cindy out</label>
+                  <label class="tag"><input type="checkbox" id="chkOffMax"> Max out</label>
+                </div>
               </div>
 
               <div class="btns" style="margin-top:10px">
@@ -773,7 +812,7 @@
   const LS_KEY = "grinch_mafia_step_tracker_v1";
   const $ = (id) => document.getElementById(id);
 
-  // ---------- I18N (minimal, but clear) ----------
+  // ---------- I18N ----------
   const I18N = {
     ru:{
       uiTitle:"Grinch Mafia — Трекер ведущего (пошагово)",
@@ -804,7 +843,7 @@
       rolesMode:"Режим ролей",
       rolesKnown:"Роли известны ведущему (рекомендую)",
       rolesUnknown:"Роли не хочу вводить",
-      rolesHint:"Если роли известны — приложение корректно понимает «Grinch изгнан». Если не вводить — ты отметишь это вручную в голосовании.",
+      rolesHint:"Если роли известны — приложение корректно понимает «Grinch изгнан». Если не вводить — ты отметишь это вручную в голосовании + можешь отключать героев.",
       create:"Создать партию",
       autoRoles:"Авто-раздать роли",
       clearRoles:"Очистить роли",
@@ -813,15 +852,15 @@
       nextNight:"Дальше → Ночь",
 
       s2Title:"2) Ночь",
-      s2Sub:"Grinch → Max → Guard (кража влияет только на 🎁)",
+      s2Sub:"Grinch → Max → Guard → Mayor/Cindy (скрыто, чтобы не «светить» днём)",
       grinchTarget:"Grinch: цель кражи",
       guardTarget:"Guard: защита (нельзя 2 ночи подряд)",
       maxTarget:"Max: цель",
       maxEffect:"Max: эффект",
-      maxHelp:"Scent Trail: Guard не спасёт цель. Rumor: утром слух (не улика). Bark: 30 сек тишины утром (+1 ❤️ при успехе).",
+      maxHelp:"None: без эффекта. Scent Trail: Guard не спасёт цель. Rumor: утром слух (не улика). Bark: 30 сек тишины утром (+1 ❤️ при успехе).",
       resolveNight:"Разрешить ночь",
       maxSwitch:"Max переходит (после Day 3)",
-      nightExplain:"Алгоритм: если Guard защищал цель Grinch И Max НЕ сделал Scent Trail на этой цели → кражи нет. Иначе кража есть → 🎁 -1.",
+      nightExplain:"Алгоритм: если Guard защищал цель Grinch И Max НЕ сделал Scent Trail на этой цели → кражи нет. Иначе кража есть → 🎁 -1. Mayor/Cindy выбираются здесь, чтобы не открывать днём.",
 
       s3Title:"3) Утро",
       s3Sub:"Объявление + Rumor / Bark Alarm",
@@ -843,15 +882,12 @@
       applyEvent:"Применить событие",
       eventHint:"Правило: 🎁-события не могут идти 2 дня подряд — приложение автоматически перевытягивает. Лимит: максимум +1 🎁 в день (событие + Cindy вместе).",
       nextDiscuss:"Дальше → Обсуждение",
+      examplePrefix:"Пример:",
 
       s5Title:"5) Обсуждение",
-      s5Sub:"Mayor выбирает 2 защищённых ДО обсуждения; обсуждение 07:00",
-      mayorProt:"Mayor: защищены (2)",
-      saveProt:"Сохранить защиту",
+      s5Sub:"Обсуждение 07:00 (Mayor/Cindy выбраны ночью)",
       setDiscuss:"Поставить 07:00",
-      cindy:"Действие Cindy",
-      kindness:"Cindy: Kindness Round (1×)",
-      cindyHint:"Kindness обычно даёт +1 🎁, НО если сегодня уже был +1 🎁 (от Day Event), тогда вместо 🎁 даётся +1 ❤️.",
+      discHint:"Mayor и Cindy выбираются в Ночь (скрыто). Здесь — только таймер и само обсуждение.",
       nextVote:"Дальше → Голосование",
 
       s6Title:"6) Голосование",
@@ -866,6 +902,9 @@
       grinchBanished:"Grinch изгнан (вручную)",
       applyVote:"Применить голосование",
       voteNote:"Ведущий объявляет только сторону: “Whoville (Good)” или “Grinch Team (Bad)”. Роль не раскрываем.",
+      cannotBanishProtected:"Нельзя изгнать защищённого Mayor.",
+      heroOffBoxTitle:"Host only: отметь изгнанных героев, чтобы убрать их из ночных действий.",
+
       spiritTitle:"Holiday Spirit (опционально)",
       spiritMeta:"Изгнанный становится «духом». Каждый дух: 1 раз за игру — +1 ❤️ ИЛИ отмена -1 ❤️ за ошибку.",
       spiritWho:"Кто использует бонус",
@@ -886,21 +925,21 @@
 
       modalTitle:"Игра завершена",
       close:"Закрыть",
-      stop:"Остановить (заблокировать)",
+      stop:"Остановить (UI заблокирован)",
       winNone:"Победы нет",
 
       toastTime:"⏰ Время!",
       guardRepeat:"Guard повторил защиту прошлой ночи — нельзя.",
       mayorRepeat:"Mayor повторил защиту как вчера — нельзя.",
       mayorNeedTwo:"Mayor должен выбрать 2 разных защищённых (если живых ≥ 2).",
-      cannotBanishProtected:"Нельзя изгнать защищённого Mayor.",
       maxTooEarly:"Max может перейти только после Day 3.",
       maxAlready:"Max уже переходил.",
       kindnessUsed:"Kindness Round уже использовали.",
       needGame:"Сначала создай партию.",
-      fillNight:"Заполни все ночные выборы.",
+      fillNight:"Заполни обязательные ночные выборы.",
       spiritUsed:"Этот дух уже использовал бонус (1 раз за игру).",
       spiritNoWrong:"Нельзя отменить -1 ❤️: сегодня не было ошибочного изгнания (Good).",
+      heroOut:"Герой изгнан — ночное действие отключено.",
     },
     en:{
       uiTitle:"Grinch Mafia — Host Tracker (Step-by-step)",
@@ -931,7 +970,7 @@
       rolesMode:"Roles mode",
       rolesKnown:"Known to host (recommended)",
       rolesUnknown:"Unknown / don’t enter roles",
-      rolesHint:"If roles are known, app can correctly detect “Grinch banished”. If unknown, you’ll tick it manually in Vote step.",
+      rolesHint:"If roles are known, app can correctly detect “Grinch banished”. If unknown, you can manually mark Grinch + disable heroes.",
       create:"Create game",
       autoRoles:"Auto-assign roles",
       clearRoles:"Clear roles",
@@ -940,15 +979,15 @@
       nextNight:"Next → Night",
 
       s2Title:"2) Night",
-      s2Sub:"Grinch → Max → Guard (steal affects 🎁 only)",
+      s2Sub:"Grinch → Max → Guard → Mayor/Cindy (hidden; not shown in Day step)",
       grinchTarget:"Grinch: steal target",
       guardTarget:"Guard: protect (no same two nights)",
       maxTarget:"Max: target",
       maxEffect:"Max: effect",
-      maxHelp:"Scent Trail: Guard can’t save target. Rumor: morning line (not evidence). Bark: 30s silence (+1 ❤️ on success).",
+      maxHelp:"None: no effect. Scent Trail: Guard can’t save target. Rumor: morning line (not evidence). Bark: 30s silence (+1 ❤️ on success).",
       resolveNight:"Resolve night",
       maxSwitch:"Max switches side (after Day 3)",
-      nightExplain:"Logic: if Guard protected Grinch target AND Max did NOT use Scent Trail on that target → no steal. Otherwise steal → 🎁 -1.",
+      nightExplain:"Logic: if Guard protected Grinch target AND Max did NOT use Scent Trail on that target → no steal. Otherwise steal → 🎁 -1. Mayor/Cindy are chosen here (hidden).",
 
       s3Title:"3) Morning",
       s3Sub:"Announcement + Rumor / Bark Alarm",
@@ -970,15 +1009,12 @@
       applyEvent:"Apply event",
       eventHint:"Rule: 🎁 events cannot happen two days in a row — app auto-rerolls. Cap: max +1 🎁 per day total (event + Cindy).",
       nextDiscuss:"Next → Discussion",
+      examplePrefix:"Example:",
 
       s5Title:"5) Discussion",
-      s5Sub:"Mayor protects 2 BEFORE discussion; discussion 07:00",
-      mayorProt:"Mayor: protected (2)",
-      saveProt:"Save protection",
+      s5Sub:"Discussion 07:00 (Mayor/Cindy chosen at Night)",
       setDiscuss:"Set 07:00",
-      cindy:"Cindy action",
-      kindness:"Cindy: Kindness Round (1×)",
-      cindyHint:"Kindness normally gives +1 🎁, BUT if a Day Event already gave +1 🎁 today, then it gives +1 ❤️ instead.",
+      discHint:"Mayor and Cindy are chosen in Night (hidden). This step is only the timer + discussion.",
       nextVote:"Next → Vote",
 
       s6Title:"6) Vote",
@@ -993,6 +1029,9 @@
       grinchBanished:"Grinch banished (manual)",
       applyVote:"Apply vote",
       voteNote:"Host reveals alignment only: “Whoville (Good)” or “Grinch Team (Bad)”. No role reveal.",
+      cannotBanishProtected:"Cannot banish Mayor-protected player.",
+      heroOffBoxTitle:"Host only: mark banished heroes to disable their night actions.",
+
       spiritTitle:"Holiday Spirit (optional)",
       spiritMeta:"Banished player becomes a Spirit. Each spirit once per game: +1 ❤️ OR cancel -1 ❤️ for wrong banishment.",
       spiritWho:"Who uses bonus",
@@ -1013,21 +1052,21 @@
 
       modalTitle:"Game over",
       close:"Close",
-      stop:"Stop (lock UI)",
+      stop:"Stop (UI locked)",
       winNone:"No win yet",
 
       toastTime:"⏰ Time!",
       guardRepeat:"Guard repeated last night — not allowed.",
       mayorRepeat:"Mayor repeated yesterday — not allowed.",
       mayorNeedTwo:"Mayor must pick 2 different protected players (if alive ≥ 2).",
-      cannotBanishProtected:"Cannot banish Mayor-protected player.",
       maxTooEarly:"Max can switch only after Day 3.",
       maxAlready:"Max already switched.",
       kindnessUsed:"Kindness Round already used.",
       needGame:"Create game first.",
-      fillNight:"Fill all night choices.",
+      fillNight:"Fill required night choices.",
       spiritUsed:"This spirit already used their one-time bonus.",
       spiritNoWrong:"Cannot cancel -1 ❤️: no wrong banishment today (Good).",
+      heroOut:"Hero is out — night action disabled.",
     }
   };
 
@@ -1043,7 +1082,7 @@
   const DEFAULT_STATE = () => ({
     started:false,
     locked:false,
-    step:1,                 // 1..7
+    step:1,
     playersCount:6,
     players:[],              // {name, role, alive, spiritUsed}
     rolesMode:"known",        // known/unknown
@@ -1059,8 +1098,11 @@
     night:{ grinch:null, guard:null, maxTarget:null, maxEffect:"Rumor" },
     lastGuard:null,
 
+    // hero disabling (for Unknown mode + safety)
+    heroOff:{ Mayor:false, Guard:false, Cindy:false, Max:false },
+
     // max
-    maxSide:"Bad",           // Bad until switch
+    maxSide:"Bad",
     maxSwitched:false,
 
     // morning effects status
@@ -1070,8 +1112,8 @@
     rumorText:"",
 
     // day event
-    currentEvent:null,       // event object
-    lastEventType:null,       // "present"/"heart"/"mechanic" (previous day applied)
+    currentEvent:null,
+    lastEventType:null,
     eventApplied:false,
     eventResult:"none",
 
@@ -1081,13 +1123,13 @@
     mayorSaved:false,
 
     // vote
-    tie:"no",                // no/yes/double
+    tie:"no",
     banished:null,
     revealSide:"Good",
     wrongBanishToday:false,
-    grinchBanishedToday:false, // computed or manual
+    grinchBanishedToday:false,
 
-    // spirit (day-level effect only)
+    // spirit
     spiritCanceledWrong:false,
 
     // Cindy
@@ -1098,21 +1140,45 @@
     undo:null
   });
 
- let state = loadState() || DEFAULT_STATE();
-state.undo = null;
+  function normalizeState(s){
+    if(!s) return s;
+    if(!s.night) s.night = {grinch:null, guard:null, maxTarget:null, maxEffect:"Rumor"};
+    if(!("maxEffect" in s.night)) s.night.maxEffect = "Rumor";
+    if(!("maxTarget" in s.night)) s.night.maxTarget = null;
+    if(!("guard" in s.night)) s.night.guard = null;
+    if(!("grinch" in s.night)) s.night.grinch = null;
 
-
- function saveState(){
-  try{
-    const { undo, ...persist } = state;              // не сохраняем undo
-    localStorage.setItem(LS_KEY, JSON.stringify(persist));
-    $('tagSaved').textContent = t('saved');
-  }catch(e){
-    console.error(e);
-    $('tagSaved').textContent = "NOT saved";
-    toast(lang==="ru" ? "Не удалось сохранить (память браузера заполнена)" : "Save failed (storage full)");
+    if(!s.heroOff) s.heroOff = {Mayor:false, Guard:false, Cindy:false, Max:false};
+    // players migration
+    if(Array.isArray(s.players)){
+      s.players = s.players.map(p => ({
+        name: p.name ?? "Player",
+        role: p.role ?? "",
+        alive: (p.alive !== undefined) ? !!p.alive : true,
+        spiritUsed: !!p.spiritUsed
+      }));
+    }else{
+      s.players = [];
+    }
+    if(!Array.isArray(s.mayorProt)) s.mayorProt = [null,null];
+    if(!Array.isArray(s.mayorLastProt)) s.mayorLastProt = [null,null];
+    return s;
   }
-}
+
+  let state = normalizeState(loadState()) || DEFAULT_STATE();
+  state.undo = null;
+
+  function saveState(){
+    try{
+      const { undo, ...persist } = state;
+      localStorage.setItem(LS_KEY, JSON.stringify(persist));
+      $('tagSaved').textContent = t('saved');
+    }catch(e){
+      console.error(e);
+      $('tagSaved').textContent = "NOT saved";
+      toast(lang==="ru" ? "Не удалось сохранить (память браузера заполнена)" : "Save failed (storage full)");
+    }
+  }
 
   function loadState(){
     try{
@@ -1156,15 +1222,15 @@ state.undo = null;
     state.log.unshift(`${stamp} — ${line}`);
     if(state.log.length>250) state.log.pop();
   }
- function setUndo(){
-  const snap = JSON.parse(JSON.stringify(state));
-  snap.undo = null;                 // критично: не вкладываем undo в undo
-  state.undo = JSON.stringify(snap);
-}
+  function setUndo(){
+    const snap = JSON.parse(JSON.stringify(state));
+    snap.undo = null;
+    state.undo = JSON.stringify(snap);
+  }
   function doUndo(){
     if(!state.undo){ toast(t('winNone')); return; }
     try{
-      state = JSON.parse(state.undo);
+      state = normalizeState(JSON.parse(state.undo));
       state.undo = null;
       saveState();
       render();
@@ -1172,92 +1238,271 @@ state.undo = null;
     }catch(e){}
   }
 
+  // ---------- Roles ----------
+  const ROLE_SETS = {
+    6:["Grinch","Max","Cindy","Mayor","Guard","Citizen"],
+    7:["Grinch","Max","Cindy","Mayor","Guard","Citizen","Citizen"]
+  };
+  function roleLabel(role){
+    const map = {
+      Grinch: {ru:"Grinch", en:"Grinch"},
+      Max: {ru:"Max", en:"Max"},
+      Cindy: {ru:"Cindy Lou", en:"Cindy Lou"},
+      Mayor: {ru:"Mayor", en:"Mayor"},
+      Guard: {ru:"Mayor’s Guard", en:"Mayor’s Guard"},
+      Citizen: {ru:"Citizen", en:"Citizen"},
+    };
+    return (map[role] ? map[role][lang] : role);
+  }
+  function findRoleIndex(role){
+    const idx = state.players.findIndex(p => p.role === role);
+    return idx >= 0 ? idx : null;
+  }
+
+  // HERO availability:
+  // - known: if role assigned -> disabled when that player is not alive
+  // - unknown: uses manual checkboxes state.heroOff
+  function heroIsOff(role){
+    if(state.rolesMode === "known"){
+      const idx = findRoleIndex(role);
+      if(idx === null) return false;      // role not assigned -> assume available
+      return !state.players[idx].alive;
+    }
+    return !!(state.heroOff && state.heroOff[role]);
+  }
+
+  function setHeroTag(tagId, role){
+    const el = $(tagId);
+    if(!el) return;
+    const off = heroIsOff(role);
+    const label = (lang==="ru")
+      ? (off ? `HERO • ${role} • OUT` : `HERO • ${role}`)
+      : (off ? `HERO • ${role} • OUT` : `HERO • ${role}`);
+    el.textContent = label;
+    el.classList.toggle('bad', off);
+    el.classList.toggle('warn', !off);
+  }
+
+  // ---------- UI wiring ----------
+  function applyI18n(){
+    $('uiTitle').textContent = t('uiTitle');
+    $('uiPill1').textContent = t('pill1');
+    $('uiPill2').textContent = t('pill2');
+
+    $('leftHead').textContent = t('leftHead');
+    $('rightHead').textContent = t('rightHead');
+
+    $('lblPresents').textContent = (lang==="ru" ? "Подарки 🎁" : "Presents 🎁");
+    $('lblHearts').textContent   = (lang==="ru" ? "Сердца ❤️" : "Hearts ❤️");
+    $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
+
+    $('subPresents').textContent = lang==="ru" ? "0…старт (не выше)" : "0…start (not above)";
+    $('subHearts').textContent = lang==="ru" ? "0…8 (8 = победа)" : "0…8 (8 = win)";
+    $('subDay').textContent = lang==="ru" ? "Проверка в конце Day 6" : "Win check at end of Day 6";
+
+    $('tagSaved').textContent = t('saved');
+    $('tagState').textContent = state.started ? t('stateRunning') : t('stateNotStarted');
+
+    $('capTitle').textContent = t('capTitle');
+    $('capSub').textContent = t('capSub');
+    $('timerTitle').textContent = t('timerTitle');
+    $('timerLeftLbl').textContent = t('timerLeftLbl');
+    $('timerLabel').textContent = t('timerLabel');
+    $('presetsLabel').textContent = t('presets');
+
+    $('btnExport').textContent = t('export');
+    $('btnReset').textContent = t('newGame');
+    $('btnLang').textContent = t('lang');
+
+    $('winHint').innerHTML = t('winHint');
+    $('btnWinCheck').textContent = t('checkWin');
+    $('btnUndo').textContent = t('undo');
+
+    // Steps titles
+    $('s1Title').textContent = t('s1Title');
+    $('s1Sub').textContent = t('s1Sub');
+    $('playersCountLbl').textContent = t('players');
+    $('playersNamesLbl').textContent = t('names');
+    $('rolesModeLbl').textContent = t('rolesMode');
+    $('rolesMode').options[0].text = t('rolesKnown');
+    $('rolesMode').options[1].text = t('rolesUnknown');
+    $('rolesHint').textContent = t('rolesHint');
+    $('btnInit').textContent = t('create');
+    $('btnAutoRoles').textContent = t('autoRoles');
+    $('btnClearRoles').textContent = t('clearRoles');
+    $('rolesAssignLbl').textContent = t('rolesAssign');
+    $('rolesAssignTip').textContent = t('rolesAssignTip');
+    $('s1Next').textContent = t('nextNight');
+
+    $('s2Title').textContent = t('s2Title');
+    $('s2Sub').textContent = t('s2Sub');
+    $('grinchTargetLbl').textContent = t('grinchTarget');
+    $('guardTargetLbl').textContent = t('guardTarget');
+    $('maxTargetLbl').textContent = t('maxTarget');
+    $('maxEffectLbl').textContent = t('maxEffect');
+    $('maxEffectHelp').textContent = t('maxHelp');
+    $('btnResolveNight').textContent = t('resolveNight');
+    $('btnMaxSwitch').textContent = t('maxSwitch');
+    $('nightExplain').innerHTML = `<b>${lang==="ru"?"Ночь:":"Night:"}</b> ${t('nightExplain')}`;
+    $('guardWarn').textContent = t('guardRepeat');
+    $('s2Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
+    $('s2Next').textContent = lang==="ru" ? "Дальше → Утро" : "Next → Morning";
+
+    $('s3Title').textContent = t('s3Title');
+    $('s3Sub').textContent = t('s3Sub');
+    $('morningTextLbl').textContent = t('morningText');
+    $('rumorTitle').textContent = t('rumor');
+    $('btnNewRumor').textContent = t('newRumor');
+    $('barkTitle').textContent = t('bark');
+    $('barkInfo').textContent = t('barkInfo');
+    $('btnBarkSuccess').textContent = t('barkSuccess');
+    $('btnBarkFail').textContent = t('barkFail');
+    $('btnSetBarkTimer').textContent = t('setBark');
+    $('s3Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
+    $('s3Next').textContent = t('nextEvent');
+
+    $('s4Title').textContent = t('s4Title');
+    $('s4Sub').textContent = t('s4Sub');
+    $('btnDrawEvent').textContent = t('drawEvent');
+    $('btnRerollEvent').textContent = t('reroll');
+    $('eventResultLbl').textContent = t('eventResult');
+    $('selEventResult').options[0].text = lang==="ru" ? "Пока не решено" : "Not decided";
+    $('selEventResult').options[1].text = lang==="ru" ? "Успех" : "Success";
+    $('selEventResult').options[2].text = lang==="ru" ? "Провал" : "Fail";
+    $('btnApplyEvent').textContent = t('applyEvent');
+    $('eventHint').textContent = t('eventHint');
+    $('s4Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
+    $('s4Next').textContent = t('nextDiscuss');
+
+    $('s5Title').textContent = t('s5Title');
+    $('s5Sub').textContent = t('s5Sub');
+    $('btnSetDiscussTimer').textContent = t('setDiscuss');
+    $('btnSetDiscussTimer5').textContent = (lang==="ru" ? "Поставить 05:00" : "Set 05:00");
+    $('discussionHint').textContent = t('discHint');
+    $('s5Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
+    $('s5Next').textContent = t('nextVote');
+
+    // Mayor/Cindy labels in Night (still i18n)
+    $('mayorProtLbl').textContent = (lang==="ru") ? "Mayor: защищены от изгнания (2)" : "Mayor: protected from banishment (2)";
+    $('btnSaveMayor').textContent = (lang==="ru") ? "Сохранить защиту" : "Save protection";
+    $('cindyLbl').textContent = (lang==="ru") ? "Действие Cindy" : "Cindy action";
+    $('btnCindyKindness').textContent = (lang==="ru") ? "Cindy: Kindness Round (1×)" : "Cindy: Kindness Round (1×)";
+    $('cindyHint').textContent = (lang==="ru")
+      ? "Kindness обычно даёт +1 🎁, НО если сегодня уже был +1 🎁 (от Day Event), тогда вместо 🎁 даётся +1 ❤️."
+      : "Kindness normally gives +1 🎁, BUT if a Day Event already gave +1 🎁 today, then it gives +1 ❤️ instead.";
+    $('mayorWarn').textContent = t('mayorRepeat');
+
+    $('s6Title').textContent = t('s6Title');
+    $('s6Sub').textContent = t('s6Sub');
+    $('tieLbl').textContent = t('tie');
+    $('selTie').options[0].text = t('tieNo');
+    $('selTie').options[1].text = t('tieYes');
+    $('selTie').options[2].text = t('tieDouble');
+    $('btnSetTieTimer').textContent = t('setTie');
+    $('banishedLbl').textContent = t('banished');
+    $('revealSideLbl').textContent = t('reveal');
+    $('selRevealSide').options[0].text = "Whoville (Good)";
+    $('selRevealSide').options[1].text = "Grinch Team (Bad)";
+    $('grinchBanishedLbl').textContent = t('grinchBanished');
+    $('btnApplyVote').textContent = t('applyVote');
+    $('voteNote').textContent = t('voteNote');
+    $('voteProtectedWarn').textContent = t('cannotBanishProtected');
+
+    $('spiritTitle').textContent = t('spiritTitle');
+    $('spiritMeta').textContent = t('spiritMeta');
+    $('spiritWhoLbl').textContent = t('spiritWho');
+    $('spiritEffectLbl').textContent = t('spiritEffect');
+    $('selSpiritEffect').options[0].text = "+1 Heart";
+    $('selSpiritEffect').options[1].text = "Cancel -1 Heart";
+    $('btnUseSpirit').textContent = t('useBonus');
+
+    $('s6Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
+    $('s6Next').textContent = t('nextEod');
+
+    $('s7Title').textContent = t('s7Title');
+    $('s7Sub').textContent = t('s7Sub');
+    $('heartsChecklistTitle').textContent = t('heartsChecklist');
+    $('lblCindyAlive').textContent = t('cindyAlive');
+    $('lblNoTie').textContent = t('noTie');
+    $('lblEventHeart').textContent = t('eventHeart');
+    $('lblWrongBanish').textContent = t('wrongBanish');
+    $('btnApplyEOD').textContent = t('applyEod');
+    $('btnNextDay').textContent = t('nextDay');
+    $('logHead').textContent = t('log');
+
+    $('winModalTitle').textContent = t('modalTitle');
+    $('btnCloseWin').textContent = t('close');
+    $('btnHardStop').textContent = t('stop');
+    $('btnNewGame2').textContent = t('newGame');
+
+    // heroesOffBox hint text
+    if($('heroesOffBox')){
+      $('heroesOffBox').querySelector('b').textContent = (lang==="ru") ? "Host only:" : "Host only:";
+      $('heroesOffBox').childNodes.forEach(()=>{});
+    }
+
+    updateTimerUI();
+  }
+
   // ---------- Events deck (24) ----------
   const EVENTS = [
-    // 🎁 1..6
-    {id:1,type:"present",
-      name:{ru:"Snowstorm 🎁", en:"Snowstorm 🎁"},
-      text:{ru:"Обсуждение короче на 2 минуты (поставь 05:00).", en:"Shorten discussion by 2 minutes (set 05:00)."},
-      onSuccess:{present:+1}, onFail:{}},
-    {id:2,type:"present",
-      name:{ru:"Gift Wrap Challenge 🎁⚠️", en:"Gift Wrap Challenge 🎁⚠️"},
-      text:{ru:"60 сек без перебиваний (1 оговорка допустима). Успех: +1 🎁, провал: -1 ❤️.", en:"60s no interruptions (1 slip ok). Success: +1 🎁, fail: -1 ❤️."},
-      onSuccess:{present:+1}, onFail:{heart:-1}},
-    {id:3,type:"present",
-      name:{ru:"Kindness Round 🎁", en:"Kindness Round 🎁"},
-      text:{ru:"По кругу 10–15 сек доброй фразы, без перебиваний. Успех: +1 🎁 (лимит).", en:"Round of kind lines. Success: +1 🎁 (cap)."},
-      onSuccess:{present:+1}, onFail:{}},
-    {id:4,type:"present",
-      name:{ru:"Repair the Sleigh 🎁⚠️", en:"Repair the Sleigh 🎁⚠️"},
-      text:{ru:"3 идеи за 60 сек. Не набрали 3 — провал (-1 ❤️). Успех: +1 🎁.", en:"3 ideas in 60s. Fail: -1 ❤️. Success: +1 🎁."},
-      onSuccess:{present:+1}, onFail:{heart:-1}},
-    {id:5,type:"present",
-      name:{ru:"Found Gift 🎁", en:"Found Gift 🎁"},
-      text:{ru:"Случайный игрок 20 сек: «кому бы подарил и почему». Успех: +1 🎁 (лимит).", en:"Random player 20s. Success: +1 🎁 (cap)."},
-      onSuccess:{present:+1}, onFail:{}},
-    {id:6,type:"present",
-      name:{ru:"Town Cleanup 🎁", en:"Town Cleanup 🎁"},
-      text:{ru:"2 минуты говорит только тот, у кого «микрофон». Успех: +1 🎁.", en:"2 minutes: only mic holder talks. Success: +1 🎁."},
-      onSuccess:{present:+1}, onFail:{}},
+    {id:1,type:"present", name:{ru:"Snowstorm 🎁", en:"Snowstorm 🎁"}, text:{ru:"Обсуждение короче на 2 минуты (поставь 05:00).", en:"Shorten discussion by 2 minutes (set 05:00)."}, onSuccess:{present:+1}, onFail:{}},
+    {id:2,type:"present", name:{ru:"Gift Wrap Challenge 🎁⚠️", en:"Gift Wrap Challenge 🎁⚠️"}, text:{ru:"60 сек без перебиваний (1 оговорка допустима). Успех: +1 🎁, провал: -1 ❤️.", en:"60s no interruptions (1 slip ok). Success: +1 🎁, fail: -1 ❤️."}, onSuccess:{present:+1}, onFail:{heart:-1}},
+    {id:3,type:"present", name:{ru:"Kindness Round 🎁", en:"Kindness Round 🎁"}, text:{ru:"По кругу 10–15 сек доброй фразы, без перебиваний. Успех: +1 🎁 (лимит).", en:"Round of kind lines. Success: +1 🎁 (cap)."}, onSuccess:{present:+1}, onFail:{}},
+    {id:4,type:"present", name:{ru:"Repair the Sleigh 🎁⚠️", en:"Repair the Sleigh 🎁⚠️"}, text:{ru:"3 идеи за 60 сек. Не набрали 3 — провал (-1 ❤️). Успех: +1 🎁.", en:"3 ideas in 60s. Fail: -1 ❤️. Success: +1 🎁."}, onSuccess:{present:+1}, onFail:{heart:-1}},
+    {id:5,type:"present", name:{ru:"Found Gift 🎁", en:"Found Gift 🎁"}, text:{ru:"Случайный игрок 20 сек: «кому бы подарил и почему». Успех: +1 🎁 (лимит).", en:"Random player 20s. Success: +1 🎁 (cap)."}, onSuccess:{present:+1}, onFail:{}},
+    {id:6,type:"present", name:{ru:"Town Cleanup 🎁", en:"Town Cleanup 🎁"}, text:{ru:"2 минуты говорит только тот, у кого «микрофон». Успех: +1 🎁.", en:"2 minutes: only mic holder talks. Success: +1 🎁."}, onSuccess:{present:+1}, onFail:{}},
 
-    // ❤️ 7..18
-    {id:7,type:"heart", name:{ru:"Town Choir ❤️", en:"Town Choir ❤️"},
-      text:{ru:"1 минута без перебиваний. Успех: +1 ❤️.", en:"1 minute no interruptions. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:8,type:"heart", name:{ru:"Turn-Taking ❤️", en:"Turn-Taking ❤️"},
-      text:{ru:"Каждому по 30 сек (в сумме ~5 минут). Успех: +1 ❤️.", en:"30s each (~5 min total). Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:9,type:"heart", name:{ru:"Whisper Round ❤️", en:"Whisper Round ❤️"},
-      text:{ru:"2 минуты все говорят шёпотом. Успех: +1 ❤️.", en:"2 minutes whisper-only. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:10,type:"heart", name:{ru:"Secret Vote ❤️", en:"Secret Vote ❤️"},
-      text:{ru:"Пробное тихое голосование. Успех: +1 ❤️.", en:"Practice secret vote. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:11,type:"heart", name:{ru:"No-Accusation Minute ❤️", en:"No-Accusation Minute ❤️"},
-      text:{ru:"60 сек без прямых обвинений. Успех: +1 ❤️.", en:"60s no direct accusations. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:12,type:"heart", name:{ru:"One-Sentence Rule ❤️", en:"One-Sentence Rule ❤️"},
-      text:{ru:"2 минуты: каждая реплика — 1 предложение. Успех: +1 ❤️.", en:"2 minutes: one sentence per turn. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:13,type:"heart", name:{ru:"Apology Token ❤️", en:"Apology Token ❤️"},
-      text:{ru:"Кто-то признаёт сомнение/ошибку. Успех: +1 ❤️.", en:"Someone admits doubt/mistake. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:14,type:"heart", name:{ru:"Warm Welcome ❤️", en:"Warm Welcome ❤️"},
-      text:{ru:"Комплимент про логику/действия. Успех: +1 ❤️.", en:"Compliment logic/actions. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:15,type:"heart", name:{ru:"Mayor’s Order ❤️", en:"Mayor’s Order ❤️"},
-      text:{ru:"Mayor объясняет защиту 1 фразой. Успех: +1 ❤️.", en:"Mayor explains protection in 1 line. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:16,type:"heart", name:{ru:"Guard’s Oath ❤️", en:"Guard’s Oath ❤️"},
-      text:{ru:"Guard обещает защитить «самого подозрительного». Успех: +1 ❤️.", en:"Guard vows to protect ‘most suspicious’. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:17,type:"heart", name:{ru:"Silent Start ❤️", en:"Silent Start ❤️"},
-      text:{ru:"30 сек тишины. Успех: +1 ❤️.", en:"30 seconds silence. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
-    {id:18,type:"heart", name:{ru:"Two Questions Only ❤️", en:"Two Questions Only ❤️"},
-      text:{ru:"Каждому максимум 2 вопроса. Успех: +1 ❤️.", en:"Max 2 questions per player. Success: +1 ❤️."},
-      onSuccess:{heart:+1}, onFail:{}},
+    {id:7,type:"heart", name:{ru:"Town Choir ❤️", en:"Town Choir ❤️"}, text:{ru:"1 минута без перебиваний. Успех: +1 ❤️.", en:"1 minute no interruptions. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:8,type:"heart", name:{ru:"Turn-Taking ❤️", en:"Turn-Taking ❤️"}, text:{ru:"Каждому по 30 сек (в сумме ~5 минут). Успех: +1 ❤️.", en:"30s each (~5 min total). Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:9,type:"heart", name:{ru:"Whisper Round ❤️", en:"Whisper Round ❤️"}, text:{ru:"2 минуты все говорят шёпотом. Успех: +1 ❤️.", en:"2 minutes whisper-only. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:10,type:"heart", name:{ru:"Secret Vote ❤️", en:"Secret Vote ❤️"}, text:{ru:"Пробное тихое голосование. Успех: +1 ❤️.", en:"Practice secret vote. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:11,type:"heart", name:{ru:"No-Accusation Minute ❤️", en:"No-Accusation Minute ❤️"}, text:{ru:"60 сек без прямых обвинений. Успех: +1 ❤️.", en:"60s no direct accusations. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:12,type:"heart", name:{ru:"One-Sentence Rule ❤️", en:"One-Sentence Rule ❤️"}, text:{ru:"2 минуты: каждая реплика — 1 предложение. Успех: +1 ❤️.", en:"2 minutes: one sentence per turn. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:13,type:"heart", name:{ru:"Apology Token ❤️", en:"Apology Token ❤️"}, text:{ru:"Кто-то признаёт сомнение/ошибку. Успех: +1 ❤️.", en:"Someone admits doubt/mistake. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:14,type:"heart", name:{ru:"Warm Welcome ❤️", en:"Warm Welcome ❤️"}, text:{ru:"Комплимент про логику/действия. Успех: +1 ❤️.", en:"Compliment logic/actions. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:15,type:"heart", name:{ru:"Mayor’s Order ❤️", en:"Mayor’s Order ❤️"}, text:{ru:"Mayor объясняет защиту 1 фразой. Успех: +1 ❤️.", en:"Mayor explains protection in 1 line. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:16,type:"heart", name:{ru:"Guard’s Oath ❤️", en:"Guard’s Oath ❤️"}, text:{ru:"Guard обещает защитить «самого подозрительного». Успех: +1 ❤️.", en:"Guard vows to protect ‘most suspicious’. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:17,type:"heart", name:{ru:"Silent Start ❤️", en:"Silent Start ❤️"}, text:{ru:"30 сек тишины. Успех: +1 ❤️.", en:"30 seconds silence. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
+    {id:18,type:"heart", name:{ru:"Two Questions Only ❤️", en:"Two Questions Only ❤️"}, text:{ru:"Каждому максимум 2 вопроса. Успех: +1 ❤️.", en:"Max 2 questions per player. Success: +1 ❤️."}, onSuccess:{heart:+1}, onFail:{}},
 
-    // mechanics 19..24
-    {id:19,type:"mechanic", name:{ru:"Evidence Token", en:"Evidence Token"},
-      text:{ru:"Ведущий даёт 1 общую нейтральную подсказку (без целей).", en:"Host gives 1 global neutral clue (no target)."},
-      onSuccess:{}, onFail:{}},
-    {id:20,type:"mechanic", name:{ru:"Gift Audit ⚠️", en:"Gift Audit ⚠️"},
-      text:{ru:"Если сегодня изгнали Whoville (ошибка) → доп. -1 🎁 в конце дня.", en:"If wrong banish today (Good) → extra -1 🎁 at end of day."},
-      onSuccess:{}, onFail:{}},
-    {id:21,type:"mechanic", name:{ru:"Spotlight", en:"Spotlight"},
-      text:{ru:"1 игрок говорит 30 сек, остальные молчат.", en:"1 player speaks 30s, others silent."},
-      onSuccess:{}, onFail:{}},
-    {id:22,type:"mechanic", name:{ru:"Double Vote", en:"Double Vote"},
-      text:{ru:"Разреши 2 тура голосования между лидерами.", en:"Allow 2 vote rounds between leaders."},
-      onSuccess:{}, onFail:{}},
-    {id:23,type:"mechanic", name:{ru:"Open Hands", en:"Open Hands"},
-      text:{ru:"Руки на столе. Уменьшает перебивания.", en:"Hands on table. Reduces interruptions."},
-      onSuccess:{}, onFail:{}},
-    {id:24,type:"mechanic", name:{ru:"Holiday Spirit Assist", en:"Holiday Spirit Assist"},
-      text:{ru:"Разреши духу применить 1-разовый бонус (если ещё не использован).", en:"Allow Spirit to use their one-time bonus (if unused)."},
-      onSuccess:{}, onFail:{}},
+    {id:19,type:"mechanic", name:{ru:"Evidence Token", en:"Evidence Token"}, text:{ru:"Ведущий даёт 1 общую нейтральную подсказку (без целей).", en:"Host gives 1 global neutral clue (no target)."}, onSuccess:{}, onFail:{}},
+    {id:20,type:"mechanic", name:{ru:"Gift Audit ⚠️", en:"Gift Audit ⚠️"}, text:{ru:"Если сегодня изгнали Whoville (ошибка) → доп. -1 🎁 в конце дня.", en:"If wrong banish today (Good) → extra -1 🎁 at end of day."}, onSuccess:{}, onFail:{}},
+    {id:21,type:"mechanic", name:{ru:"Spotlight", en:"Spotlight"}, text:{ru:"1 игрок говорит 30 сек, остальные молчат.", en:"1 player speaks 30s, others silent."}, onSuccess:{}, onFail:{}},
+    {id:22,type:"mechanic", name:{ru:"Double Vote", en:"Double Vote"}, text:{ru:"Разреши 2 тура голосования между лидерами.", en:"Allow 2 vote rounds between leaders."}, onSuccess:{}, onFail:{}},
+    {id:23,type:"mechanic", name:{ru:"Open Hands", en:"Open Hands"}, text:{ru:"Руки на столе. Уменьшает перебивания.", en:"Hands on table. Reduces interruptions."}, onSuccess:{}, onFail:{}},
+    {id:24,type:"mechanic", name:{ru:"Holiday Spirit Assist", en:"Holiday Spirit Assist"}, text:{ru:"Разреши духу применить 1-разовый бонус (если ещё не использован).", en:"Allow Spirit to use their one-time bonus (if unused)."}, onSuccess:{}, onFail:{}},
   ];
+
+  // NEW: Event examples (all 24)
+  const EVENT_EXAMPLES = {
+    1:{ru:"Пример: ведущий ставит 05:00 и говорит: «Сегодня обсуждаем быстрее — короткие фразы».", en:"Example: set 05:00 and say: “Short discussion today — quick points only.”"},
+    2:{ru:"Пример: 60 сек. «Перебил 2 раза — провал». Потом отмечаешь success/fail.", en:"Example: 60s. “2 interruptions = fail.” Then mark success/fail."},
+    3:{ru:"Пример: по кругу: «Я благодарен(на) … потому что …» 10–15 сек каждый.", en:"Example: round: “I’m grateful for … because …” 10–15s each."},
+    4:{ru:"Пример: «За 60 сек назовите 3 идеи: как поймать Grinch». Не набрали — fail.", en:"Example: “In 60s give 3 ideas to catch Grinch.” Less than 3 = fail."},
+    5:{ru:"Пример: случайный игрок: «Я бы подарил подарок X, потому что…» 20 сек.", en:"Example: random player: “I’d gift X because…” 20s."},
+    6:{ru:"Пример: «Говорит только тот, у кого ‘микрофон’ (ручка/жетон)».", en:"Example: “Only the mic holder (pen/token) can speak.”"},
+
+    7:{ru:"Пример: 1 минута — никто никого не перебивает, ведущий останавливает сразу.", en:"Example: 1 minute — no interruptions; host stops instantly."},
+    8:{ru:"Пример: таймер 30 сек на игрока: один говорит, остальные молчат.", en:"Example: 30s per player: one speaks, others silent."},
+    9:{ru:"Пример: 2 минуты — все говорят тихо/шёпотом. Громкий голос = fail.", en:"Example: 2 minutes whisper-only. Loud voice = fail."},
+    10:{ru:"Пример: «Пробное голосование молча: пальцами показываем 1–2–3».", en:"Example: “Silent practice vote: show 1–2–3 with fingers.”"},
+    11:{ru:"Пример: «Минуту нельзя говорить “Ты Grinch/Ты злой” — только факты/впечатления».", en:"Example: “For 60s no ‘You are Grinch’ — facts/impressions only.”"},
+    12:{ru:"Пример: 2 минуты: «каждый ход = одно предложение». Второе предложение = предупреждение.", en:"Example: 2 minutes: “one sentence per turn.” Second sentence = warning."},
+    13:{ru:"Пример: ведущий просит: «Кто готов признать, что мог ошибиться?»", en:"Example: host asks: “Who can admit they might be wrong?”"},
+    14:{ru:"Пример: «Скажи комплимент логике другого игрока (без сарказма)».", en:"Example: “Give a real compliment about someone’s logic (no sarcasm).”"},
+    15:{ru:"Пример: Mayor говорит: «Я защищаю этих двоих, потому что…» (1 фраза).", en:"Example: Mayor: “I protect these two because…” (1 line)."},
+    16:{ru:"Пример: Guard: «Сегодня я буду защищать самого подозрительного игрока».", en:"Example: Guard: “Tonight I’ll protect the most suspicious player.”"},
+    17:{ru:"Пример: ведущий ставит 00:30 и говорит: «Начинаем с тишины».", en:"Example: set 00:30 and say: “We start with silence.”"},
+    18:{ru:"Пример: «Каждый может задать максимум 2 вопроса за день».", en:"Example: “Each player may ask max 2 questions today.”"},
+
+    19:{ru:"Пример: ведущий: «Сегодня ночью кража была/не была. Это всё». (без имён).", en:"Example: host: “Tonight there was/no steal. That’s all.” (no names)."},
+    20:{ru:"Пример: ведущий напоминает правило: «Если сегодня ошиблись и изгнали Good — в конце дня 🎁 -1».", en:"Example: host reminder: “If wrong banish (Good) today — at EOD 🎁 -1.”"},
+    21:{ru:"Пример: ведущий выбирает игрока: «30 секунд говоришь только ты».", en:"Example: host picks: “30 seconds only you speak.”"},
+    22:{ru:"Пример: «Если ничья — 1 минута, по 1 фразе, затем переголосование между лидерами».", en:"Example: “If tie: 1 minute, one line each, then revote between leaders.”"},
+    23:{ru:"Пример: «Руки на столе, не шепчемся». Ведущий следит.", en:"Example: “Hands on table, no whispering.” Host enforces."},
+    24:{ru:"Пример: ведущий говорит духу: «Можешь сейчас потратить бонус (+1 ❤️ или отмена -1 ❤️)».", en:"Example: host tells Spirit: “You can use your one-time bonus now (+1 ❤️ or cancel -1 ❤️).”"},
+  };
 
   const RUMORS = [
     {ru:"Ходят слухи, что {X} крутился рядом с подарками… но это только слух.", en:"There’s a rumor that {X} was near the presents… but it’s not evidence."},
@@ -1267,7 +1512,7 @@ state.undo = null;
     {ru:"Ходят слухи про {X}: кто-то видел, как он смотрел на трек 🎁 слишком внимательно… но это просто слова.", en:"Rumor about {X}: someone saw them watching the 🎁 track too closely… just words."},
   ];
 
-  // ---------- Timer (steady seconds, no skipping) ----------
+  // ---------- Timer ----------
   let timer = {
     total: 420,
     left: 420,
@@ -1352,176 +1597,6 @@ state.undo = null;
     $('tReset').textContent = (lang==="ru" ? "Сброс" : "Reset");
   }
 
-  // ---------- Roles ----------
-  const ROLE_SETS = {
-    6:["Grinch","Max","Cindy","Mayor","Guard","Citizen"],
-    7:["Grinch","Max","Cindy","Mayor","Guard","Citizen","Citizen"]
-  };
-  function roleLabel(role){
-    const map = {
-      Grinch: {ru:"Grinch", en:"Grinch"},
-      Max: {ru:"Max", en:"Max"},
-      Cindy: {ru:"Cindy Lou", en:"Cindy Lou"},
-      Mayor: {ru:"Mayor", en:"Mayor"},
-      Guard: {ru:"Mayor’s Guard", en:"Mayor’s Guard"},
-      Citizen: {ru:"Citizen", en:"Citizen"},
-    };
-    return (map[role] ? map[role][lang] : role);
-  }
-  function findRoleIndex(role){
-    const idx = state.players.findIndex(p => p.role === role);
-    return idx >= 0 ? idx : null;
-  }
-
-  // ---------- UI wiring ----------
-  function applyI18n(){
-    $('uiTitle').textContent = t('uiTitle');
-    $('uiPill1').textContent = t('pill1');
-    $('uiPill2').textContent = t('pill2');
-
-    $('leftHead').textContent = t('leftHead');
-    $('rightHead').textContent = t('rightHead');
-
-    $('lblPresents').textContent = (lang==="ru" ? "Подарки 🎁" : "Presents 🎁");
-$('lblHearts').textContent   = (lang==="ru" ? "Сердца ❤️" : "Hearts ❤️");
-$('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
-
-    $('subPresents').textContent = lang==="ru" ? "0…старт (не выше)" : "0…start (not above)";
-    $('subHearts').textContent = lang==="ru" ? "0…8 (8 = победа)" : "0…8 (8 = win)";
-    $('subDay').textContent = lang==="ru" ? "Проверка в конце Day 6" : "Win check at end of Day 6";
-
-    $('tagSaved').textContent = t('saved');
-    $('tagState').textContent = state.started ? t('stateRunning') : t('stateNotStarted');
-
-    $('capTitle').textContent = t('capTitle');
-    $('capSub').textContent = t('capSub');
-    $('timerTitle').textContent = t('timerTitle');
-    $('timerLeftLbl').textContent = t('timerLeftLbl');
-    $('timerLabel').textContent = t('timerLabel');
-    $('presetsLabel').textContent = t('presets');
-
-    $('btnExport').textContent = t('export');
-    $('btnReset').textContent = t('newGame');
-    $('btnLang').textContent = t('lang');
-
-    $('winHint').innerHTML = t('winHint');
-    $('btnWinCheck').textContent = t('checkWin');
-    $('btnUndo').textContent = t('undo');
-
-    // Steps titles
-    $('s1Title').textContent = t('s1Title');
-    $('s1Sub').textContent = t('s1Sub');
-    $('playersCountLbl').textContent = t('players');
-    $('playersNamesLbl').textContent = t('names');
-    $('rolesModeLbl').textContent = t('rolesMode');
-    $('rolesMode').options[0].text = t('rolesKnown');
-    $('rolesMode').options[1].text = t('rolesUnknown');
-    $('rolesHint').textContent = t('rolesHint');
-    $('btnInit').textContent = t('create');
-    $('btnAutoRoles').textContent = t('autoRoles');
-    $('btnClearRoles').textContent = t('clearRoles');
-    $('rolesAssignLbl').textContent = t('rolesAssign');
-    $('rolesAssignTip').textContent = t('rolesAssignTip');
-    $('s1Next').textContent = t('nextNight');
-
-    $('s2Title').textContent = t('s2Title');
-    $('s2Sub').textContent = t('s2Sub');
-    $('grinchTargetLbl').textContent = t('grinchTarget');
-    $('guardTargetLbl').textContent = t('guardTarget');
-    $('maxTargetLbl').textContent = t('maxTarget');
-    $('maxEffectLbl').textContent = t('maxEffect');
-    $('maxEffectHelp').textContent = t('maxHelp');
-    $('btnResolveNight').textContent = t('resolveNight');
-    $('btnMaxSwitch').textContent = t('maxSwitch');
-    $('nightExplain').innerHTML = `<b>${lang==="ru"?"Ночь:":"Night:"}</b> ${t('nightExplain')}`;
-    $('guardWarn').textContent = t('guardRepeat');
-    $('s2Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
-    $('s2Next').textContent = lang==="ru" ? "Дальше → Утро" : "Next → Morning";
-
-    $('s3Title').textContent = t('s3Title');
-    $('s3Sub').textContent = t('s3Sub');
-    $('morningTextLbl').textContent = t('morningText');
-    $('rumorTitle').textContent = t('rumor');
-    $('btnNewRumor').textContent = t('newRumor');
-    $('barkTitle').textContent = t('bark');
-    $('barkInfo').textContent = t('barkInfo');
-    $('btnBarkSuccess').textContent = t('barkSuccess');
-    $('btnBarkFail').textContent = t('barkFail');
-    $('btnSetBarkTimer').textContent = t('setBark');
-    $('s3Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
-    $('s3Next').textContent = t('nextEvent');
-
-    $('s4Title').textContent = t('s4Title');
-    $('s4Sub').textContent = t('s4Sub');
-    $('btnDrawEvent').textContent = t('drawEvent');
-    $('btnRerollEvent').textContent = t('reroll');
-    $('eventResultLbl').textContent = t('eventResult');
-    $('selEventResult').options[0].text = lang==="ru" ? "Пока не решено" : "Not decided";
-    $('selEventResult').options[1].text = lang==="ru" ? "Успех" : "Success";
-    $('selEventResult').options[2].text = lang==="ru" ? "Провал" : "Fail";
-    $('btnApplyEvent').textContent = t('applyEvent');
-    $('eventHint').textContent = t('eventHint');
-    $('s4Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
-    $('s4Next').textContent = t('nextDiscuss');
-
-    $('s5Title').textContent = t('s5Title');
-    $('s5Sub').textContent = t('s5Sub');
-    $('mayorProtLbl').textContent = t('mayorProt');
-    $('btnSaveMayor').textContent = t('saveProt');
-    $('btnSetDiscussTimer').textContent = t('setDiscuss');
-    $('cindyLbl').textContent = t('cindy');
-    $('btnCindyKindness').textContent = t('kindness');
-    $('cindyHint').textContent = t('cindyHint');
-    $('mayorWarn').textContent = t('mayorRepeat');
-    $('s5Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
-    $('s5Next').textContent = t('nextVote');
-
-    $('s6Title').textContent = t('s6Title');
-    $('s6Sub').textContent = t('s6Sub');
-    $('tieLbl').textContent = t('tie');
-    $('selTie').options[0].text = t('tieNo');
-    $('selTie').options[1].text = t('tieYes');
-    $('selTie').options[2].text = t('tieDouble');
-    $('btnSetTieTimer').textContent = t('setTie');
-    $('banishedLbl').textContent = t('banished');
-    $('revealSideLbl').textContent = t('reveal');
-    $('selRevealSide').options[0].text = "Whoville (Good)";
-    $('selRevealSide').options[1].text = "Grinch Team (Bad)";
-    $('grinchBanishedLbl').textContent = t('grinchBanished');
-    $('btnApplyVote').textContent = t('applyVote');
-    $('voteNote').textContent = t('voteNote');
-    $('voteProtectedWarn').textContent = t('cannotBanishProtected');
-
-    $('spiritTitle').textContent = t('spiritTitle');
-    $('spiritMeta').textContent = t('spiritMeta');
-    $('spiritWhoLbl').textContent = t('spiritWho');
-    $('spiritEffectLbl').textContent = t('spiritEffect');
-    $('selSpiritEffect').options[0].text = "+1 Heart";
-    $('selSpiritEffect').options[1].text = "Cancel -1 Heart";
-    $('btnUseSpirit').textContent = t('useBonus');
-
-    $('s6Prev').textContent = lang==="ru" ? "← Назад" : "← Back";
-    $('s6Next').textContent = t('nextEod');
-
-    $('s7Title').textContent = t('s7Title');
-    $('s7Sub').textContent = t('s7Sub');
-    $('heartsChecklistTitle').textContent = t('heartsChecklist');
-    $('lblCindyAlive').textContent = t('cindyAlive');
-    $('lblNoTie').textContent = t('noTie');
-    $('lblEventHeart').textContent = t('eventHeart');
-    $('lblWrongBanish').textContent = t('wrongBanish');
-    $('btnApplyEOD').textContent = t('applyEod');
-    $('btnNextDay').textContent = t('nextDay');
-    $('logHead').textContent = t('log');
-
-    $('winModalTitle').textContent = t('modalTitle');
-    $('btnCloseWin').textContent = t('close');
-    $('btnHardStop').textContent = t('stop');
-    $('btnNewGame2').textContent = t('newGame');
-
-    updateTimerUI();
-  }
-
   // ---------- Rendering ----------
   function setActiveStep(n){
     state.step = clamp(n,1,7);
@@ -1574,15 +1649,16 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     }
 
     fillSelect('selGrinchTarget', aliveNames, false);
-    fillSelect('selGuardTarget', aliveNames, false);
-    fillSelect('selMaxTarget', aliveNames, false);
+
+    // Guard/Max selects: still fill with alive list (even if disabled)
+    fillSelect('selGuardTarget', aliveNames, true);
+    fillSelect('selMaxTarget', aliveNames, true);
 
     fillSelect('selMayorProt1', aliveNames, true);
     fillSelect('selMayorProt2', aliveNames, true);
 
     fillSelect('selBanished', aliveNames, true);
 
-    // spirit who: dead players (spirits). if none yet -> show placeholder list (alive) but still allow none.
     const spirits = state.players.filter(p=>!p.alive).map(p=>p.name);
     fillSelect('selSpiritWho', spirits.length ? spirits : aliveNames, true);
   }
@@ -1591,6 +1667,8 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     const box = $('rolesBox');
     box.style.display = (state.rolesMode === "known") ? "block" : "none";
     $('grinchBanishedBox').style.display = (state.rolesMode === "unknown") ? "block" : "none";
+    $('heroesOffBox').style.display = (state.rolesMode === "unknown") ? "block" : "none";
+
     $('grinchBanishedTip').textContent = (lang==="ru")
       ? "Нужно только для условия «Grinch изгнан при 🎁≥6»."
       : "Only needed for “Grinch banished while 🎁≥6” win condition.";
@@ -1620,7 +1698,6 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     html.push(`</div>`);
     $('rolesTable').innerHTML = html.join('');
 
-    // enforce unique roles (except Citizen)
     const selects = $('rolesTable').querySelectorAll('select[data-role-index]');
     selects.forEach(sel=>{
       sel.addEventListener('change', (e)=>{
@@ -1629,7 +1706,6 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
         setUndo();
         state.players[idx].role = val;
 
-        // uniqueness: Grinch/Max/Cindy/Mayor/Guard must be unique
         const unique = ["Grinch","Max","Cindy","Mayor","Guard"];
         if(unique.includes(val)){
           for(let j=0;j<state.players.length;j++){
@@ -1671,6 +1747,7 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     if(!state.currentEvent){
       $('eventName').textContent = "—";
       $('eventDesc').textContent = "—";
+      $('eventExample').textContent = "—";
       $('eventTag').textContent = "—";
       $('eventAppliedNote').textContent = "—";
       $('eventCapWarn').classList.remove('show');
@@ -1683,27 +1760,24 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     $('eventAppliedNote').textContent = state.eventApplied
       ? (lang==="ru" ? "Событие применено." : "Event applied.")
       : (lang==="ru" ? "Событие не применено." : "Not applied yet.");
+
+    const ex = EVENT_EXAMPLES[e.id];
+    $('eventExample').textContent = ex
+      ? `${t('examplePrefix')} ${ex[lang]}`
+      : (lang==="ru" ? "Пример: —" : "Example: —");
   }
 
   function autoFillChecklist(){
-    // Cindy alive:
-    // - known roles: auto only if Cindy role is set
-    // - unknown roles: do NOT override (host sets manually)
     if(state.rolesMode === "known"){
       const cindyIdx = findRoleIndex("Cindy");
       if(cindyIdx !== null){
         $('chkCindyAlive').checked = !!state.players[cindyIdx].alive;
       }
     }
-
-    // No tie heart only if tie === "no"
     $('chkNoTie').checked = (state.tie === "no");
 
-    // Event heart succeeded
     const e = state.currentEvent;
     $('chkEventHeart').checked = !!(e && e.type==="heart" && state.eventApplied && state.eventResult==="success");
-
-    // Wrong banish (can be canceled by Spirit)
     $('chkWrongBanish').checked = state.wrongBanishToday && !state.spiritCanceledWrong;
   }
 
@@ -1719,37 +1793,84 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
       el.disabled = disabled;
     });
 
-    // setup selections
     $('playersCount').value = String(state.playersCount);
     $('playersNames').value = state.players.map(p=>p.name).join(", ");
     $('rolesMode').value = state.rolesMode;
 
-    // show steps
     for(let i=1;i<=7;i++){
       $('step'+i).classList.toggle('active', i===state.step);
     }
     $('tagStep').textContent = `Step ${state.step}/7`;
 
-    // step tags
     $('s1Tag').textContent = state.started ? "OK" : "—";
     $('s2Tag').textContent = state.started ? "Ready" : "—";
     $('s3Tag').textContent = state.started ? "Ready" : "—";
-    $('s5Tag').textContent = state.mayorSaved ? "Saved" : "—";
+    $('s5Tag').textContent = "—";
     $('s6Tag').textContent = state.banished ? "Applied" : "—";
     $('s7Tag').textContent = "—";
 
-    // fill selects from players
     renderPlayersSelects();
 
-    // night fields
+    // restore night fields
     $('selMaxEffect').value = state.night.maxEffect || "Rumor";
     if(state.night.grinch) $('selGrinchTarget').value = state.night.grinch;
     if(state.night.guard) $('selGuardTarget').value = state.night.guard;
     if(state.night.maxTarget) $('selMaxTarget').value = state.night.maxTarget;
 
-    // guard rule warning
+    // HERO tags
+    setHeroTag('tagHeroGuard', 'Guard');
+    setHeroTag('tagHeroMax', 'Max');
+    setHeroTag('tagHeroMayor', 'Mayor');
+    setHeroTag('tagHeroCindy', 'Cindy');
+
+    // hero disable UI behavior
+    const guardOff = heroIsOff("Guard");
+    const maxOff   = heroIsOff("Max");
+    const mayorOff = heroIsOff("Mayor");
+    const cindyOff = heroIsOff("Cindy");
+
+    // Guard
+    $('selGuardTarget').disabled = disabled || guardOff;
+    $('guardOffNote').textContent = guardOff ? t('heroOut') : "";
+    if(guardOff){
+      $('selGuardTarget').value = "";
+      state.night.guard = null;
+    }
+
+    // Max
+    $('selMaxTarget').disabled = disabled || maxOff;
+    $('selMaxEffect').disabled = disabled || maxOff;
+    $('maxOffNote').textContent = maxOff ? t('heroOut') : "";
+    if(maxOff){
+      $('selMaxTarget').value = "";
+      $('selMaxEffect').value = "None";
+      state.night.maxTarget = null;
+      state.night.maxEffect = "None";
+    }
+
+    // Mayor
+    $('selMayorProt1').disabled = disabled || mayorOff;
+    $('selMayorProt2').disabled = disabled || mayorOff;
+    $('btnSaveMayor').disabled  = disabled || mayorOff;
+    $('mayorOffNote').textContent = mayorOff ? t('heroOut') : "";
+    if(mayorOff){
+      state.mayorProt = [null,null];
+      state.mayorSaved = false;
+    }
+
+    // Cindy
+    $('btnCindyKindness').disabled = disabled || cindyOff || state.cindyKindnessUsed;
+    if(cindyOff){
+      $('cindyNote').textContent = (lang==="ru") ? "Cindy Lou изгнана — действие недоступно." : "Cindy Lou is out — action disabled.";
+    }else{
+      $('cindyNote').textContent = state.cindyKindnessUsed
+        ? (lang==="ru" ? "Kindness Round уже использован." : "Kindness Round already used.")
+        : (lang==="ru" ? "Можно применить 1 раз за игру." : "Can be used once per game.");
+    }
+
+    // guard rule warning (skip if hero is off)
     const guardPick = $('selGuardTarget').value;
-    $('guardWarn').classList.toggle('show', !!(state.lastGuard && guardPick && guardPick===state.lastGuard));
+    $('guardWarn').classList.toggle('show', !guardOff && !!(state.lastGuard && guardPick && guardPick===state.lastGuard));
 
     // morning
     renderMorningText();
@@ -1760,7 +1881,7 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     renderEvent();
     $('eventCapWarn').classList.toggle('show', false);
 
-    // mayor
+    // mayor saved note
     $('selMayorProt1').value = state.mayorProt[0] || "";
     $('selMayorProt2').value = state.mayorProt[1] || "";
     $('mayorWarn').classList.remove('show');
@@ -1770,18 +1891,22 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
         : `Saved: ${state.mayorProt.filter(Boolean).join(" & ") || "—"}`)
       : "—";
 
-    // Cindy
-    $('cindyNote').textContent = state.cindyKindnessUsed
-      ? (lang==="ru" ? "Kindness Round уже использован." : "Kindness Round already used.")
-      : (lang==="ru" ? "Можно применить 1 раз за игру." : "Can be used once per game.");
-
     // vote
     $('selTie').value = state.tie || "no";
     $('selRevealSide').value = state.revealSide || "Good";
     $('selBanished').value = state.banished || "";
     $('voteProtectedWarn').classList.remove('show');
 
-    // Spirit note (per-spirit, once per game)
+    // heroesOff box checkboxes (unknown mode)
+    $('heroesOffBox').style.display = (state.rolesMode === "unknown") ? "block" : "none";
+    if(state.rolesMode === "unknown"){
+      $('chkOffMayor').checked = !!state.heroOff.Mayor;
+      $('chkOffGuard').checked = !!state.heroOff.Guard;
+      $('chkOffCindy').checked = !!state.heroOff.Cindy;
+      $('chkOffMax').checked   = !!state.heroOff.Max;
+    }
+
+    // Spirit note
     const spirits = state.players.filter(p=>!p.alive);
     if(!spirits.length){
       $('spiritNote').textContent = (lang==="ru")
@@ -1796,14 +1921,12 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     $('logBox').textContent = state.log.length ? state.log.join("\n") : "—";
 
     // roles
-    $('rolesMode').value = state.rolesMode;
     $('rolesHint').textContent = t('rolesHint');
     renderRolesTable();
 
     // End of day auto-fill
     autoFillChecklist();
 
-    // rules hint in step 7
     $('rulesHint').innerHTML = (lang==="ru")
       ? "<b>Памятка:</b> Bark (+1 ❤️) — утром, отдельно. В конце дня: Cindy alive (+1 ❤️), no tie (+1 ❤️), event-heart (+1 ❤️), wrong banish (-1 ❤️). Затем победа. Потом следующий день.<br><span class='small'>Gift Audit: если сегодня ошибочно изгнали Good — в конце дня ещё -1 🎁 (не отменяется духом).</span>"
       : "<b>Reminder:</b> Bark (+1 ❤️) is in the morning, separate. End of day: Cindy alive (+1 ❤️), no tie (+1 ❤️), event-heart (+1 ❤️), wrong banish (-1 ❤️). Then win check. Then next day.<br><span class='small'>Gift Audit: if wrong banish today (Good) — extra -1 🎁 at EOD (not canceled by Spirit).</span>";
@@ -1817,15 +1940,13 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     setUndo();
     const pc = parseInt($('playersCount').value,10);
     const namesRaw = $('playersNames').value.trim();
-    const names = namesRaw
-      ? namesRaw.split(",").map(s=>s.trim()).filter(Boolean)
-      : [];
-    const needed = pc;
+    const names = namesRaw ? namesRaw.split(",").map(s=>s.trim()).filter(Boolean) : [];
     const list = [];
-    for(let i=0;i<needed;i++){
+    for(let i=0;i<pc;i++){
       const name = names[i] || (lang==="ru" ? `Игрок ${i+1}` : `Player ${i+1}`);
       list.push({name, role:"", alive:true, spiritUsed:false});
     }
+
     state.playersCount = pc;
     state.rolesMode = $('rolesMode').value || "known";
 
@@ -1838,6 +1959,9 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
 
     state.lastGuard = null;
     state.night = { grinch:null, guard:null, maxTarget:null, maxEffect:"Rumor" };
+
+    state.heroOff = {Mayor:false, Guard:false, Cindy:false, Max:false};
+
     state.maxSide = "Bad";
     state.maxSwitched = false;
     state.barkActive = false;
@@ -1902,14 +2026,26 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
 
   function resolveNight(){
     if(!state.started){ toast(t('needGame')); return; }
+
+    const guardOff = heroIsOff("Guard");
+    const maxOff   = heroIsOff("Max");
+
     const g = $('selGrinchTarget').value;
-    const guard = $('selGuardTarget').value;
-    const mt = $('selMaxTarget').value;
-    const me = $('selMaxEffect').value;
+    const guard = $('selGuardTarget').value || null;
+    const mt = $('selMaxTarget').value || null;
+    const me = $('selMaxEffect').value || "None";
 
-    if(!g || !guard || !mt || !me){ toast(t('fillNight')); return; }
+    // Required:
+    if(!g){ toast(t('fillNight')); return; }
+    if(!guardOff && !guard){ toast(t('fillNight')); return; }
+    if(!maxOff && (me !== "None") && !mt){ toast(t('fillNight')); return; }
+    if(!maxOff && me === "ScentTrail" && !mt){ toast(t('fillNight')); return; }
+    if(!maxOff && me === "Rumor" && !mt){ toast(t('fillNight')); return; }
+    // BarkAlarm technically doesn't need target, but keep consistent:
+    if(!maxOff && me === "BarkAlarm" && !mt){ toast(t('fillNight')); return; }
 
-    if(state.lastGuard && guard === state.lastGuard){
+    // Guard repeat rule only if guard is active
+    if(!guardOff && state.lastGuard && guard === state.lastGuard){
       $('guardWarn').classList.add('show');
       toast(t('guardRepeat'));
       return;
@@ -1918,27 +2054,28 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
 
     setUndo();
     state.night.grinch = g;
-    state.night.guard = guard;
-    state.night.maxTarget = mt;
-    state.night.maxEffect = me;
+    state.night.guard = guardOff ? null : guard;
+    state.night.maxTarget = maxOff ? null : mt;
+    state.night.maxEffect = maxOff ? "None" : me;
 
-    const blocked = (guard === g) && !(me === "ScentTrail" && mt === g);
+    const maxActive = (!maxOff && me !== "None");
+    const blocked = (!guardOff && guard === g) && !(maxActive && me === "ScentTrail" && mt === g);
     const stealSuccess = !blocked;
 
     state._lastStealSuccess = stealSuccess;
     if(stealSuccess){
       state.presents = clamp(state.presents - 1, 0, state.startPresents);
       addLog((lang==="ru")
-        ? `Ночь: кража УСПЕШНА. 🎁 -1 (Grinch→${g}, Guard→${guard}, Max:${me}→${mt}).`
-        : `Night: steal SUCCESS. 🎁 -1 (Grinch→${g}, Guard→${guard}, Max:${me}→${mt}).`);
+        ? `Ночь: кража УСПЕШНА. 🎁 -1 (Grinch→${g}${guardOff?"":`, Guard→${guard}`}${maxOff?"":`, Max:${me}→${mt}`}).`
+        : `Night: steal SUCCESS. 🎁 -1 (Grinch→${g}${guardOff?"":`, Guard→${guard}`}${maxOff?"":`, Max:${me}→${mt}`}).`);
     }else{
       addLog((lang==="ru")
-        ? `Ночь: кражи НЕТ (Guard спас). (Grinch→${g}, Guard→${guard}, Max:${me}→${mt}).`
-        : `Night: NO steal (Guard blocked). (Grinch→${g}, Guard→${guard}, Max:${me}→${mt}).`);
+        ? `Ночь: кражи НЕТ (Guard спас). (Grinch→${g}, Guard→${guard}${maxOff?"":`, Max:${me}→${mt}`}).`
+        : `Night: NO steal (Guard blocked). (Grinch→${g}, Guard→${guard}${maxOff?"":`, Max:${me}→${mt}`}).`);
     }
 
-    state.rumorActive = (me === "Rumor");
-    state.barkActive  = (me === "BarkAlarm");
+    state.rumorActive = (maxActive && me === "Rumor");
+    state.barkActive  = (maxActive && me === "BarkAlarm");
     state.barkResolved = false;
 
     if(state.rumorActive){
@@ -1951,7 +2088,9 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
       addLog(lang==="ru" ? `Bark Alarm активирован (30 сек тишины утром).` : `Bark Alarm activated (30s silence in morning).`);
     }
 
-    state.lastGuard = guard;
+    if(!guardOff){
+      state.lastGuard = guard;
+    }
 
     setActiveStep(3);
     render();
@@ -1969,7 +2108,8 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
       return;
     }
     setUndo();
-    state.rumorText = genRumor(state.night.maxTarget || "—");
+    const mt = state.night.maxTarget || state.night.grinch || "—";
+    state.rumorText = genRumor(mt);
     addLog(lang==="ru" ? "Rumor обновлён." : "Rumor refreshed.");
     render();
   }
@@ -2004,7 +2144,7 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     render();
   }
 
-  function pickEventAvoidingPresentStreak(forceReroll=false){
+  function pickEventAvoidingPresentStreak(){
     const avoidPresent = (state.lastEventType === "present");
     const maxAttempts = 60;
 
@@ -2014,7 +2154,6 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
       return {event:e, avoided: avoidPresent && e.type !== "present"};
     }
 
-    // Fallback: if too unlucky, just return any non-present if exists
     if(avoidPresent){
       const nonPresents = EVENTS.filter(x=>x.type !== "present");
       if(nonPresents.length){
@@ -2024,11 +2163,11 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     return {event: EVENTS[Math.floor(Math.random()*EVENTS.length)], avoided:false};
   }
 
-  function drawEvent(reroll=false){
+  function drawEvent(){
     if(!state.started){ toast(t('needGame')); return; }
     setUndo();
 
-    const {event:e, avoided} = pickEventAvoidingPresentStreak(!!reroll);
+    const {event:e, avoided} = pickEventAvoidingPresentStreak();
 
     state.currentEvent = e;
     state.eventApplied = false;
@@ -2043,7 +2182,7 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
   }
 
   function rerollEvent(){
-    drawEvent(true);
+    drawEvent();
   }
 
   function applyEvent(){
@@ -2100,6 +2239,8 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
 
   function saveMayor(){
     if(!state.started){ toast(t('needGame')); return; }
+    if(heroIsOff("Mayor")){ toast(t('heroOut')); return; }
+
     setUndo();
     const a = $('selMayorProt1').value || null;
     const b = $('selMayorProt2').value || null;
@@ -2141,7 +2282,9 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
 
   function cindyKindness(){
     if(!state.started){ toast(t('needGame')); return; }
+    if(heroIsOff("Cindy")){ toast(t('heroOut')); return; }
     if(state.cindyKindnessUsed){ toast(t('kindnessUsed')); return; }
+
     setUndo();
 
     if(!state.presentGainedToday && state.presents < state.startPresents){
@@ -2208,6 +2351,12 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
       state.grinchBanishedToday = (grinchIdx!==null && !state.players[grinchIdx].alive);
     }else{
       state.grinchBanishedToday = !!$('chkGrinchBanished').checked;
+
+      // apply hero-off toggles from checkboxes
+      state.heroOff.Mayor = !!$('chkOffMayor').checked;
+      state.heroOff.Guard = !!$('chkOffGuard').checked;
+      state.heroOff.Cindy = !!$('chkOffCindy').checked;
+      state.heroOff.Max   = !!$('chkOffMax').checked;
     }
 
     addLog((lang==="ru")
@@ -2224,21 +2373,12 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     const who = $('selSpiritWho').value || null;
     const eff = $('selSpiritEffect').value;
 
-    if(!who){
-      toast(lang==="ru" ? "Выбери духа" : "Pick a spirit");
-      return;
-    }
+    if(!who){ toast(lang==="ru" ? "Выбери духа" : "Pick a spirit"); return; }
 
     const p = state.players.find(x=>x.name===who);
     if(!p){ toast(lang==="ru" ? "Игрок не найден" : "Player not found"); return; }
-    if(p.alive){
-      toast(lang==="ru" ? "Этот игрок ещё жив" : "This player is still alive");
-      return;
-    }
-    if(p.spiritUsed){
-      toast(t('spiritUsed'));
-      return;
-    }
+    if(p.alive){ toast(lang==="ru" ? "Этот игрок ещё жив" : "This player is still alive"); return; }
+    if(p.spiritUsed){ toast(t('spiritUsed')); return; }
 
     if(eff === "cancelWrong" && !state.wrongBanishToday){
       toast(t('spiritNoWrong'));
@@ -2274,9 +2414,7 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     const delta = cindy + noTie + eventH + wrong;
     state.hearts = clamp(state.hearts + delta, 0, 8);
 
-    // Gift Audit mechanic:
-    // If current event is 20 and wrong banish happened -> extra -1 🎁 at end of day.
-    // IMPORTANT: Spirit cancel affects ONLY ❤️ penalty, NOT this 🎁 penalty.
+    // Gift Audit mechanic
     let giftAuditApplied = false;
     if(state.currentEvent && state.currentEvent.id === 20 && state.wrongBanishToday){
       const before = state.presents;
@@ -2315,6 +2453,7 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     state.grinchBanishedToday = false;
     state.spiritCanceledWrong = false;
 
+    // mayor: carry yesterday protection (for repeat rule), reset for new day
     state.mayorLastProt = state.mayorProt.slice();
     state.mayorProt = [null,null];
     state.mayorSaved = false;
@@ -2403,7 +2542,7 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     render();
   }
 
-  // ---------- Confirm on refresh/close (accidental) ----------
+  // ---------- Confirm on refresh/close ----------
   function hasUnsavedGame(){
     return !!(state && state.started && !state.locked);
   }
@@ -2451,6 +2590,24 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
     render();
   });
 
+  // Unknown-mode hero toggles update immediately (not only on Apply vote)
+  function wireHeroOffCheckboxes(){
+    if(!$('chkOffMayor')) return;
+    const handler = ()=>{
+      if(state.rolesMode !== "unknown") return;
+      setUndo();
+      state.heroOff.Mayor = !!$('chkOffMayor').checked;
+      state.heroOff.Guard = !!$('chkOffGuard').checked;
+      state.heroOff.Cindy = !!$('chkOffCindy').checked;
+      state.heroOff.Max   = !!$('chkOffMax').checked;
+      render();
+    };
+    $('chkOffMayor').addEventListener('change', handler);
+    $('chkOffGuard').addEventListener('change', handler);
+    $('chkOffCindy').addEventListener('change', handler);
+    $('chkOffMax').addEventListener('change', handler);
+  }
+
   // Step nav
   $('s1Next').addEventListener('click', ()=> setActiveStep(2));
   $('s2Prev').addEventListener('click', ()=> setActiveStep(1));
@@ -2473,14 +2630,16 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
   $('btnBarkFail').addEventListener('click', barkFail);
   $('btnSetBarkTimer').addEventListener('click', ()=> timerSet("00:30", "Bark"));
 
-  $('btnDrawEvent').addEventListener('click', ()=> drawEvent(false));
+  $('btnDrawEvent').addEventListener('click', ()=> drawEvent());
   $('btnRerollEvent').addEventListener('click', rerollEvent);
   $('btnApplyEvent').addEventListener('click', applyEvent);
 
   $('btnSaveMayor').addEventListener('click', saveMayor);
-  $('btnSetDiscussTimer').addEventListener('click', ()=> timerSet("07:00", "Discussion"));
 
   $('btnCindyKindness').addEventListener('click', cindyKindness);
+
+  $('btnSetDiscussTimer').addEventListener('click', ()=> timerSet("07:00", "Discussion"));
+  $('btnSetDiscussTimer5').addEventListener('click', ()=> timerSet("05:00", "Discussion"));
 
   $('btnSetTieTimer').addEventListener('click', ()=> timerSet("01:00", "Tie"));
   $('btnApplyVote').addEventListener('click', applyVote);
@@ -2532,6 +2691,7 @@ $('lblDay').textContent      = (lang==="ru" ? "День" : "Day");
   // Initial render + restore
   lang = getLang();
   timerSet("07:00", "Discussion");
+  wireHeroOffCheckboxes();
   render();
 })();
 </script>
